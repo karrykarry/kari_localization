@@ -1,5 +1,7 @@
+#include <ros/ros.h>
 #include <stdio.h>
 #include <iostream>
+#include <string>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
@@ -12,12 +14,15 @@
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Point.h>
-#include <ros/ros.h>
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <tf/transform_broadcaster.h>
 
 #include "registration.hpp"
+
+
+using namespace std;
+
 
 int main (int argc, char** argv)
 {
@@ -39,28 +44,18 @@ int main (int argc, char** argv)
 	pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
 
-	char file_input[100] = "/home/amsl/3Dmap/d_kan/clouds/cloud_1.pcd";
-	char file_target[100] = "/home/amsl/3Dmap/d_kan/clouds/cloud_25.pcd";
+	string file_input;
+	string file_target;
+
+	// char file_input[100] = "/sample_pcd/input_cloud.pcd";
+	// char file_target[100] = "/home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/target_cloud.pcd";
+
+	n.getParam("input/cloud",file_input);
+	n.getParam("target/cloud",file_target);
 
 	pcl::io::loadPCDFile(file_input, *input_cloud);
 	pcl::io::loadPCDFile(file_target, *target_cloud);
 
-    //
-	// if (pcl::io::loadPCDFile<pcl::PointXYZ> ("/home/amsl/3Dmap/d_kan/clouds/cloud_1.pcd", *target_cloud) == -1)
-	// {
-	// 	PCL_ERROR ("Couldn't read file room_scan1.pcd \n");
-	// 	return (-1);
-	// }
-	// std::cout << "Loaded " << target_cloud->size () << " data points from room_scan1.pcd" << std::endl;
-    //
-	// if (pcl::io::loadPCDFile<pcl::PointXYZ> ("/home/amsl/3Dmap/d_kan/clouds/cloud_30.pcd", *input_cloud) == -1)
-	// {
-	// 	PCL_ERROR ("Couldn't read file room_scan2.pcd \n");
-	// 	return (-1);
-	// }
-	// std::cout << "Loaded " << input_cloud->size () << " data points from room_scan2.pcd" << std::endl;
-    //
-    //
 
 
 	tf::TransformBroadcaster br;
