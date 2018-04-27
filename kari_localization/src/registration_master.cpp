@@ -19,6 +19,7 @@
 #include <tf/transform_broadcaster.h>
 
 #include "registration.hpp"
+#include "mathematics.hpp"
 
 
 using namespace std;
@@ -47,8 +48,6 @@ int main (int argc, char** argv)
 	string file_input;
 	string file_target;
 
-	// char file_input[100] = "/sample_pcd/input_cloud.pcd";
-	// char file_target[100] = "/home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/target_cloud.pcd";
 
 	n.getParam("input/cloud",file_input);
 	n.getParam("target/cloud",file_target);
@@ -70,12 +69,17 @@ int main (int argc, char** argv)
 	// a = ndt.getFinalTransformation ();////4×4の行列         
 	//最適の角度・長さを検出
 
+	calc_rpy(a,l_roll,l_pitch,l_yaw);
+	
+/*
 	tf::Matrix3x3 mat_l;
 	mat_l.setValue(static_cast<double>(a(0, 0)), static_cast<double>(a(0, 1)), static_cast<double>(a(0, 2)),
 			static_cast<double>(a(1, 0)), static_cast<double>(a(1, 1)), static_cast<double>(a(1, 2)),
 			static_cast<double>(a(2, 0)), static_cast<double>(a(2, 1)), static_cast<double>(a(2, 2)));
 
 	mat_l.getRPY(l_roll, l_pitch, l_yaw, 1);
+
+*/
 
 	//////////////////変換行列から得た答え           
 
