@@ -71,16 +71,6 @@ int main (int argc, char** argv)
 
 	calc_rpy(a,l_roll,l_pitch,l_yaw);
 	
-/*
-	tf::Matrix3x3 mat_l;
-	mat_l.setValue(static_cast<double>(a(0, 0)), static_cast<double>(a(0, 1)), static_cast<double>(a(0, 2)),
-			static_cast<double>(a(1, 0)), static_cast<double>(a(1, 1)), static_cast<double>(a(1, 2)),
-			static_cast<double>(a(2, 0)), static_cast<double>(a(2, 1)), static_cast<double>(a(2, 2)));
-
-	mat_l.getRPY(l_roll, l_pitch, l_yaw, 1);
-
-*/
-
 	//////////////////変換行列から得た答え           
 
 	cout<<"t(0,3) : "<<a(0, 3)<<endl;
@@ -88,9 +78,6 @@ int main (int argc, char** argv)
 	cout<<"l_roll : "<<l_roll<<endl;
 	cout<<"l_pitch : "<<l_pitch<<endl;
 	cout<<"l_yaw : "<<l_yaw<<endl;
-
-
-
 
 	sensor_msgs::PointCloud2 pc, pc2, pc3;
 	pcl::toROSMsg(*target_cloud, pc);
@@ -104,11 +91,9 @@ int main (int argc, char** argv)
 		pc2.header.frame_id = "map";
 		pc3.header.frame_id = "map";
 
-
 		pc.header.stamp  = ros::Time::now();
 		pc2.header.stamp = ros::Time::now();
 		pc3.header.stamp = ros::Time::now();
-
 
 		trg_pub.publish(pc);
 		ipt_pub.publish(pc2);
