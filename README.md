@@ -1,0 +1,2 @@
+# kari_localization
+localization
