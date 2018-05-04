@@ -50,10 +50,6 @@ CloudXPtr filtered_map_cloud (new pcl::PointCloud<PointX>);
 CloudXPtr output_cloud (new pcl::PointCloud<PointX>);
 
 
-const float map_limit = 19;
-const float laser_limit = 17;
-
-
 class Align{
 	private:
 		ros::NodeHandle n;
@@ -72,6 +68,8 @@ class Align{
 
 		float x_now,y_now,yaw_now;
 		float z_now;
+
+		float map_limit,laser_limit;
 
 		float size;
 		bool flag;
@@ -110,11 +108,19 @@ Align::Align(ros::NodeHandle& n) :
 	vis_voxel_pub = n.advertise<sensor_msgs::PointCloud2>("/after_ndt", 1000);
 	vis_map_pub = n.advertise<sensor_msgs::PointCloud2>("/map_ndt", 1000);
 
+
+    n.param("voxel_size",size, 0.0f);
+    n.param("map_limit",map_limit, 0.0f);
+    n.param("laser_limit",laser_limit, 0.0f);
+
+	cout << "voxel_size" << size << endl;
+	cout << "map_limit" << map_limit << endl;
+	cout << "laser_limit" << laser_limit << endl;
+
 	x_now = y_now = yaw_now = z_now = 0;
 
 	l_roll = l_pitch = l_yaw = 0;
 
-	size = 1.0;
 }
 
 //現在地を知る
