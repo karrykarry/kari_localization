@@ -142,7 +142,6 @@ add_definitions(
 ## Declare a C++ library
 add_library(tool
 
-
 	src/tool/registration.cpp
 	src/tool/mathematics.cpp
 )
@@ -178,6 +177,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 
 add_executable(registration_master src/registration_master.cpp)
+add_executable(map_alignment src/map_alignment.cpp)
 
 target_link_libraries(registration_master
 	tool
@@ -185,6 +185,11 @@ target_link_libraries(registration_master
     ${PCL_LIBRARIES}
 )
 
+target_link_libraries(map_alignment
+	tool
+	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
 #############
 ## Install ##
 #############

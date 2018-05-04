@@ -1,0 +1,1 @@
+registration_master.cpp:ndtやicpの確認
