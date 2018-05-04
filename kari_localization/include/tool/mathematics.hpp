@@ -10,6 +10,7 @@
 #include <Eigen/Eigenvalues>
 
 void calc_rpy(Eigen::Matrix4f a,double &roll,double &pitch,double &yaw);
+float distance(float x,float y);
 
 #endif
 

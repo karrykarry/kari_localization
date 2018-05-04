@@ -20,6 +20,7 @@
 
 #include "registration.hpp"
 #include "mathematics.hpp"
+#include "filters_kari.hpp"
 
 
 using namespace std;
@@ -44,6 +45,16 @@ int main (int argc, char** argv)
 	pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud (new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
+//////////filtersの確認//////////////
+	ros::Publisher map_pub  = n.advertise<sensor_msgs::PointCloud2>("/map_cloud", 1);
+	pcl::PointCloud<pcl::PointXYZ>::Ptr map_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+	string file;
+	sensor_msgs::PointCloud2 pc4;
+	
+	file = "/home/amsl/onda_map/d_kan_around_si2017_gicp_ds.pcd";
+	map_reader(file,map_cloud);
+	pcl::toROSMsg(*map_cloud, pc4);
+/////////////////////////////////////
 
 	string file_input;
 	string file_target;
@@ -99,6 +110,11 @@ int main (int argc, char** argv)
 		ipt_pub.publish(pc2);
 		out_pub.publish(pc3);
 
+/////////////filtersの確認/////////////
+		pc4.header.frame_id = "map";
+		pc4.header.stamp  = ros::Time::now();
+		map_pub.publish(pc4);
+//////////////////////////////////////
 		roop.sleep();
 		ros::spinOnce();
 	}

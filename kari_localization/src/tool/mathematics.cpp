@@ -15,4 +15,13 @@ void calc_rpy(Eigen::Matrix4f a,double &roll,double &pitch,double &yaw){
 	mat_l.getRPY(roll, pitch, yaw, 1);
 }
 
+float distance(float x,float y){
+    float ans; 
+
+
+    ans =  sqrt(x*x+y*y);
+
+    return ans;
+
+}
 

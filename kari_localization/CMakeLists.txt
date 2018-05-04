@@ -144,6 +144,7 @@ add_library(tool
 
 	src/tool/registration.cpp
 	src/tool/mathematics.cpp
+	src/tool/filters_kari.cpp
 )
 
 
