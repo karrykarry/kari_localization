@@ -1,4 +1,7 @@
-///保留
+//
+//map_alignment.launch をつかってパラメータ調整する
+//
+//
 
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
@@ -61,28 +64,29 @@ class Align{
 		ros::Publisher vis_map_pub;
 
 		sensor_msgs::PointCloud2 vis_laser_voxel;
-		sensor_msgs::PointCloud2 vis_map;
-		
+		sensor_msgs::PointCloud2 vis_map;	
 		nav_msgs::Odometry odo;
 		nav_msgs::Odometry odo_pub;
 
 		float x_now,y_now,yaw_now;
 		float z_now;
 
-		float map_limit,laser_limit;
+		float map_limit,laser_limit;//map・laserの距離
+		string map_file;
 
-		float size;
-		bool flag;
+		float size;//voxel
+		bool flag;//lidar
 		double l_roll, l_pitch, l_yaw;//角度etc
+	
 	public:
 		Align(ros::NodeHandle& n);
-		void velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input);//velodyneの点群を扱う
 		void map_read();//mapの点群を扱う
 		void maptolidar();//位置合わせを行う
 
-		void local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point);
+		void local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point);//mapを部分的に参照する
 
 		void odomCallback(const nav_msgs::Odometry::Ptr msg);
+		void velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input);//velodyneの点群を扱う
 		bool spin()
 		{
 			ros::Rate loop_rate(r);
@@ -105,20 +109,22 @@ Align::Align(ros::NodeHandle& n) :
 	odom_sub = n.subscribe("/lcl_ekf", 1000, &Align::odomCallback, this);
 
 	ndt_pub = n.advertise<nav_msgs::Odometry>("/sq_ndt_data", 1000);
-	vis_voxel_pub = n.advertise<sensor_msgs::PointCloud2>("/after_ndt", 1000);
-	vis_map_pub = n.advertise<sensor_msgs::PointCloud2>("/map_ndt", 1000);
+	vis_voxel_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_result", 1000);
+	vis_map_pub = n.advertise<sensor_msgs::PointCloud2>("/vis_map", 1000);
 
 
     n.param("voxel_size",size, 0.0f);
     n.param("map_limit",map_limit, 0.0f);
     n.param("laser_limit",laser_limit, 0.0f);
+	n.getParam("map/d_kan_around",map_file);
 
-	cout << "voxel_size" << size << endl;
-	cout << "map_limit" << map_limit << endl;
-	cout << "laser_limit" << laser_limit << endl;
+	cout << "voxel_size：" << size << endl;
+	cout << "map_limit：" << map_limit << endl;
+	cout << "laser_limit：" << laser_limit << endl;
+	cout << "map_name：" << map_file << endl;
+
 
 	x_now = y_now = yaw_now = z_now = 0;
-
 	l_roll = l_pitch = l_yaw = 0;
 
 }
@@ -173,11 +179,7 @@ Align::velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input){
 void 
 Align::map_read()
 {
-	string file;
-
-	file = "/home/amsl/onda_map/d_kan_around_si2017_gicp_ds.pcd";
-
-	map_reader(file,filtered_map_cloud);
+	map_reader(map_file,filtered_map_cloud);
 	cout << "mapから得た Filtered cloud contains " << filtered_map_cloud->size ()<< endl;
 
 }
@@ -216,16 +218,7 @@ Align::local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
 void 
 Align::maptolidar()
 {
-    //
-	// pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_laser_cloud (new pcl::PointCloud<pcl::PointXYZ>);
-	// pcl::ApproximateVoxelGrid<pcl::PointXYZ> approximate_voxel_filter;
-    //
-	// approximate_voxel_filter.setLeafSize (0.5, 0.5, 0.5);//もう少し大きいvoxelで良い感
-    //
-	// approximate_voxel_filter.setInputCloud (limit_input_cloud);
-	// approximate_voxel_filter.filter (*filtered_laser_cloud);
-	std::cout << "レーザから得た Filtered cloud contains " << filtered_laser_cloud->size ()<< std::endl;
-
+	// cout << "レーザから得た Filtered cloud contains " << filtered_laser_cloud->size ()<< endl;
 
 	local_map(filtered_map_cloud);
 
@@ -262,7 +255,7 @@ Align::maptolidar()
 
 
 int main(int argc, char** argv){
-	ros::init(argc,argv,"alignment");
+	ros::init(argc,argv,"map_alignment");
 	ros::NodeHandle n;
 
 

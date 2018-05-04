@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-	<rosparam file="$(find kari_localization)/sample_pcd/clouds.yaml" />
+	<rosparam file="$(find kari_localization)/yaml/clouds.yaml" />
 	<node pkg="kari_localization" type="registration_master" name="registration_master" output="screen" />
 </launch>
 

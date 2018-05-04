@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-	<!-- <rosparam file="$(find kari_localization)/sample_pcd/clouds.yaml" /> -->
+	<rosparam file="$(find kari_localization)/yaml/maps.yaml" />
 	<node pkg="kari_localization" type="map_alignment" name="alignment" output="screen" />
         <param name="voxel_size" value="0.5" />
         <param name="map_limit" value="19.0" />

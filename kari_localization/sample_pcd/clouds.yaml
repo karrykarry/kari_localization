@@ -1,3 +1,0 @@
-input: {cloud : /home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/input_cloud.pcd }
-target: {cloud: /home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/target_cloud.pcd }
-
