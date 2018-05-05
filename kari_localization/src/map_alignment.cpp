@@ -116,15 +116,20 @@ Align::Align(ros::NodeHandle& n) :
     n.param("voxel_size",size, 0.0f);
     n.param("map_limit",map_limit, 0.0f);
     n.param("laser_limit",laser_limit, 0.0f);
+    n.param("init_x",x_now, 0.0f);
+    n.param("init_y",y_now, 0.0f);
+    n.param("init_z",z_now, 0.0f);
+    n.param("init_yaw",yaw_now, 0.0f);
 	n.getParam("map/d_kan_around",map_file);
 
 	cout << "voxel_size：" << size << endl;
 	cout << "map_limit：" << map_limit << endl;
 	cout << "laser_limit：" << laser_limit << endl;
+	cout << "init_x：" << x_now << " init_y："<< y_now << " init_z：" << z_now << endl;
+	cout << "init_yaw：" << yaw_now << endl;
 	cout << "map_name：" << map_file << endl;
 
-
-	x_now = y_now = yaw_now = z_now = 0;
+	// x_now = y_now = yaw_now = z_now = 0;
 	l_roll = l_pitch = l_yaw = 0;
 
 }
