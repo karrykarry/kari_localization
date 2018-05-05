@@ -52,7 +52,7 @@ int main (int argc, char** argv)
 	sensor_msgs::PointCloud2 pc4;
 	
 	file = "/home/amsl/onda_map/d_kan_around_si2017_gicp_ds.pcd";
-	map_reader(file,map_cloud);
+	map_reader(0.5,file,map_cloud);
 	pcl::toROSMsg(*map_cloud, pc4);
 /////////////////////////////////////
 

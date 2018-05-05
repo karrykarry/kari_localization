@@ -2,13 +2,19 @@
 <launch>
 	<rosparam file="$(find kari_localization)/yaml/maps.yaml" />
 	<node pkg="kari_localization" type="map_alignment" name="alignment" output="screen" />
-        <param name="voxel_size" value="0.5" />
+        <param name="laser_voxel_size" value="0.5" />
+        <param name="map_voxel_size" value="0.5" />
         <param name="map_limit" value="19.0" />
         <param name="laser_limit" value="17.0" />
         <param name="init_x" value="0.0" />
         <param name="init_y" value="0.0" />
         <param name="init_z" value="0.0" />
         <param name="init_yaw" value="0.0" />
+
+
+		<param name="lidar_topic" value="/velodyne_obstacles" />
+		<param name="odom_topic" value="/lcl_ndt" />
+		<param name="ndt_topic" value="/sq_ndt_data" />
 
 </launch>
 

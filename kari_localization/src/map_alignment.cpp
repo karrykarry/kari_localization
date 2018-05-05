@@ -74,10 +74,15 @@ class Align{
 		float map_limit,laser_limit;//map・laserの距離
 		string map_file;
 
-		float size;//voxel
+		float laser_size,map_size;//voxel
 		bool flag;//lidar
 		double l_roll, l_pitch, l_yaw;//角度etc
-	
+
+
+		string LIDAR_TOPIC;
+		string ODOM_TOPIC;
+		string NDT_TOPIC;
+
 	public:
 		Align(ros::NodeHandle& n);
 		void map_read();//mapの点群を扱う
@@ -105,31 +110,33 @@ Align::Align(ros::NodeHandle& n) :
 	r(10),
 	flag(false)
 {
-	velo_sub = n.subscribe("/velodyne_obstacles", 1000, &Align::velodyneCallback, this);
-	odom_sub = n.subscribe("/lcl_ekf", 1000, &Align::odomCallback, this);
 
-	ndt_pub = n.advertise<nav_msgs::Odometry>("/sq_ndt_data", 1000);
-	vis_voxel_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_result", 1000);
-	vis_map_pub = n.advertise<sensor_msgs::PointCloud2>("/vis_map", 1000);
-
-
-    n.param("voxel_size",size, 0.0f);
+    n.param("laser_voxel_size",laser_size, 0.0f);
+    n.param("map_voxel_size",map_size, 0.0f);
     n.param("map_limit",map_limit, 0.0f);
     n.param("laser_limit",laser_limit, 0.0f);
     n.param("init_x",x_now, 0.0f);
     n.param("init_y",y_now, 0.0f);
     n.param("init_z",z_now, 0.0f);
     n.param("init_yaw",yaw_now, 0.0f);
+    n.param("lidar_topic",LIDAR_TOPIC, {0});
+    n.param("odom_topic",ODOM_TOPIC, {0});
+    n.param("ndt_topic",NDT_TOPIC, {0});
 	n.getParam("map/d_kan_around",map_file);
+	
+	
+	velo_sub = n.subscribe(LIDAR_TOPIC, 1000, &Align::velodyneCallback, this);
+	odom_sub = n.subscribe(ODOM_TOPIC, 1000, &Align::odomCallback, this);
 
-	cout << "voxel_size：" << size << endl;
-	cout << "map_limit：" << map_limit << endl;
-	cout << "laser_limit：" << laser_limit << endl;
-	cout << "init_x：" << x_now << " init_y："<< y_now << " init_z：" << z_now << endl;
-	cout << "init_yaw：" << yaw_now << endl;
+	ndt_pub = n.advertise<nav_msgs::Odometry>(NDT_TOPIC, 1000);
+	vis_voxel_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_result", 1000);
+	vis_map_pub = n.advertise<sensor_msgs::PointCloud2>("/vis_map", 1000);
+
+
+
+	// cout << "-------PARAMETARS----------" << endl;
 	cout << "map_name：" << map_file << endl;
 
-	// x_now = y_now = yaw_now = z_now = 0;
 	l_roll = l_pitch = l_yaw = 0;
 
 }
@@ -175,7 +182,7 @@ Align::velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input){
 	
 	}
 
-	voxel_grid(size,limit_input_cloud,filtered_laser_cloud);
+	voxel_grid(laser_size,limit_input_cloud,filtered_laser_cloud);
 
 }
 
@@ -184,7 +191,7 @@ Align::velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input){
 void 
 Align::map_read()
 {
-	map_reader(map_file,filtered_map_cloud);
+	map_reader(map_size,map_file,filtered_map_cloud);
 	cout << "mapから得た Filtered cloud contains " << filtered_map_cloud->size ()<< endl;
 
 }
