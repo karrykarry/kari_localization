@@ -122,6 +122,7 @@ Align::Align(ros::NodeHandle& n) :
     n.param("lidar_topic",LIDAR_TOPIC, {0});
     n.param("odom_topic",ODOM_TOPIC, {0});
     n.param("ndt_topic",NDT_TOPIC, {0});
+    // n.getParam("ndt_topic",NDT_TOPIC);
 	n.getParam("map/d_kan_around",map_file);
 	
 	
