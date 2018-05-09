@@ -124,6 +124,7 @@ Align::Align(ros::NodeHandle& n) :
     n.param("ndt_topic",NDT_TOPIC, {0});
     // n.getParam("ndt_topic",NDT_TOPIC);
 	n.getParam("map/d_kan_around",map_file);
+	// n.getParam("map/d_kan_indoor",map_file);
 	
 	
 	velo_sub = n.subscribe(LIDAR_TOPIC, 1000, &Align::velodyneCallback, this);
@@ -175,7 +176,8 @@ Align::velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input){
 		
         d = distance(temp_point.x , temp_point.y);
         
-        if((1.5 <= d &&d <= laser_limit) && (-0.3 + z_now < temp_point.z && temp_point.z <4.0 + z_now)){//つくば
+        // if((1.5 <= d &&d <= laser_limit) && (-0.3 + z_now < temp_point.z && temp_point.z <4.0 + z_now)){//つくば
+        if((1.5 <= d &&d <= laser_limit)&&(-0.3 + z_now < temp_point.z && temp_point.z <2.0 + z_now)) {//つくば
 
 			limit_input_cloud->points.push_back(temp_point);
 	
@@ -231,7 +233,7 @@ Align::local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
 void 
 Align::maptolidar()
 {
-	// cout << "レーザから得た Filtered cloud contains " << filtered_laser_cloud->size ()<< endl;
+	cout << "レーザから得た Filtered cloud contains " << filtered_laser_cloud->size ()<< endl;
 
 	local_map(filtered_map_cloud);
 
