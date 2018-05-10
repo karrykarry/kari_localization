@@ -1,6 +1,7 @@
 //
-//estimate_result で使いたい値を選択
 //
+//0:odom 1:imu 2:ndt 3:ekf
+//の結果を得られる
 //
 #include <stdio.h>
 #include <iostream>
@@ -32,8 +33,11 @@ class Complement{
 		ros::Subscriber ekf_sub;
 
 		ros::Publisher lcl_pub;
-		ros::Publisher lcl_vis_pub;
+		ros::Publisher lcl_1_pub;
+		ros::Publisher lcl_2_pub;
+		ros::Publisher lcl_3_pub;
 		ros::Publisher lcl_hantei_pub;//0:直線 1:カーブ
+		ros::Publisher lcl_vis_pub;
 
 		tf::TransformBroadcaster br;
 		tf::Transform transform; //位置と姿勢を持つ座標系を表すクラス
@@ -41,7 +45,11 @@ class Complement{
 		Localization lcl[N];
 
 		geometry_msgs::Pose2D init_pose; // [deg] This expresses a position and orientation on a 2D manifold.
+		nav_msgs::Odometry lcl_ini;
 		nav_msgs::Odometry lcl_;
+		nav_msgs::Odometry lcl_1;
+		nav_msgs::Odometry lcl_2;
+		nav_msgs::Odometry lcl_3;
 		nav_msgs::Odometry lcl_vis;
 
 		sensor_msgs::Imu imu_msg;
@@ -63,7 +71,6 @@ class Complement{
 		string IMU_TOPIC;
 		string NDT_TOPIC;
 		string EKF_TOPIC;
-		string PUB_TOPIC;
 		int type;
 	public:
 		Complement(ros::NodeHandle& n);
@@ -110,8 +117,8 @@ Complement::Complement(ros::NodeHandle &n) :
 	n.param("imu_topic" ,IMU_TOPIC, {0});
 	n.param("ndt_topic" ,NDT_TOPIC, {0});
 	n.param("ekf_topic" ,EKF_TOPIC, {0});
-	n.param("publish_topic" ,PUB_TOPIC, {0});
-	n.param("estimate_result" ,type, {0});//choice
+
+	n.param("estimate_result" ,type, {0});
 
 	for(size_t i=0;i<N;i++){
 		lcl[i].x =   init_pose.x;
@@ -126,12 +133,21 @@ Complement::Complement(ros::NodeHandle &n) :
 	ndt_sub = n.subscribe(NDT_TOPIC, 100, &Complement::ndtCallback, this);
     ekf_sub = n.subscribe(EKF_TOPIC, 100, &Complement::ekfCallback, this);
 
-	lcl_pub = n.advertise<nav_msgs::Odometry>(PUB_TOPIC, 10);
-	lcl_vis_pub = n.advertise<nav_msgs::Odometry>("/lcl_sq_vis", 10);
+	lcl_pub = n.advertise<nav_msgs::Odometry>("/lcl_sq_odo", 10);
+	lcl_1_pub = n.advertise<nav_msgs::Odometry>("/lcl_sq_imu", 10);
+	lcl_2_pub = n.advertise<nav_msgs::Odometry>("/lcl_sq_ndt", 10);
+	lcl_3_pub = n.advertise<nav_msgs::Odometry>("/lcl_sq_ekf", 10);
 	lcl_hantei_pub = n.advertise<std_msgs::Int32>("/hantei", 10);
+	lcl_vis_pub = n.advertise<nav_msgs::Odometry>("/lcl_sq_vis", 10);
 
 	lcl_.header.frame_id = HEADER_FRAME;
 	lcl_.child_frame_id = CHILD_FRAME;
+	lcl_1.header.frame_id = HEADER_FRAME;
+	lcl_1.child_frame_id = CHILD_FRAME;
+	lcl_2.header.frame_id = HEADER_FRAME;
+	lcl_2.child_frame_id = CHILD_FRAME;
+	lcl_3.header.frame_id = HEADER_FRAME;
+	lcl_3.child_frame_id = CHILD_FRAME;
 	lcl_vis.header.frame_id = HEADER_FRAME;
 	lcl_vis.child_frame_id = CHILD_FRAME;
 
@@ -241,15 +257,41 @@ Complement::prepare(){
 void
 Complement::start(){
 
-// 0:odom 1:imu 2:ndt 3:ekf
-
 	lcl_.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
-	lcl_.pose.pose.position.x = lcl[type].x;
-	lcl_.pose.pose.position.y = lcl[type].y;
+	lcl_.pose.pose.position.x = lcl[0].x;
+	lcl_.pose.pose.position.y = lcl[0].y;
 	lcl_.pose.pose.position.z = 0.0;
-	lcl_.pose.pose.orientation.z = lcl[type].yaw;
+	lcl_.pose.pose.orientation.z = lcl[0].yaw;
 
 	lcl_pub.publish(lcl_);
+
+
+	lcl_1.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
+	lcl_1.pose.pose.position.x = lcl[1].x;
+	lcl_1.pose.pose.position.y = lcl[1].y;
+	lcl_1.pose.pose.position.z = 0.0;
+	lcl_1.pose.pose.orientation.z = lcl[1].yaw;
+
+	lcl_1_pub.publish(lcl_1);
+
+
+	lcl_2.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
+	lcl_2.pose.pose.position.x = lcl[2].x;
+	lcl_2.pose.pose.position.y = lcl[2].y;
+	lcl_2.pose.pose.position.z = 0.0;
+	lcl_2.pose.pose.orientation.z = lcl[2].yaw;
+
+	lcl_2_pub.publish(lcl_2);
+
+
+
+	lcl_3.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
+	lcl_3.pose.pose.position.x = lcl[3].x;
+	lcl_3.pose.pose.position.y = lcl[3].y;
+	lcl_3.pose.pose.position.z = 0.0;	
+	lcl_3.pose.pose.orientation.z = lcl[3].yaw;
+
+	lcl_3_pub.publish(lcl_3);
 
 
 	lcl_vis.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
@@ -277,10 +319,10 @@ Complement::start(){
 
 
 int main (int argc, char** argv){
-	ros::init(argc,argv,"imu_complement");
+	ros::init(argc,argv,"bundle_complement");
 	ros::NodeHandle n;
 
-	cout<<"------complement start---------"<<endl;
+	cout<<"------bundle_complement start---------"<<endl;
 
 	Complement complement(n);
 

@@ -127,6 +127,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/kari_complement.cpp
@@ -141,6 +142,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/kari_complement_node.cpp)
+add_executable(bundle_complement src/bundle_complement.cpp)
 add_executable(imu_complement src/imu_complement.cpp)
 
 ## Rename C++ executable without prefix
@@ -157,10 +159,13 @@ add_executable(imu_complement src/imu_complement.cpp)
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-target_link_libraries(imu_complement
+target_link_libraries(bundle_complement
   ${catkin_LIBRARIES}
 )
 
+target_link_libraries(imu_complement
+  ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############
