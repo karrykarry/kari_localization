@@ -113,7 +113,9 @@ Complement::Complement(ros::NodeHandle &n) :
 	n.param("ndt_topic" ,NDT_TOPIC, {0});
 	n.param("ekf_topic" ,EKF_TOPIC, {0});
 	n.param("publish_topic" ,PUB_TOPIC, {0});
-	n.param("estimate_result" ,type, {0});//choice
+	n.param("estimate_result" ,type, 0);//choice
+
+
 
 	for(size_t i=0;i<N;i++){
 		lcl[i].x =   init_pose.x;
@@ -146,7 +148,7 @@ Complement::Complement(ros::NodeHandle &n) :
 	}
 	catch(char *errstr){
 		cout<< errstr << endl;
-	
+
 	}
 
 
@@ -226,7 +228,6 @@ Complement::ndtCallback(const nav_msgs::Odometry msg){
 
 void 
 Complement::ekfCallback(const nav_msgs::Odometry msg){
-	
 
 	fflush(stdout);
     

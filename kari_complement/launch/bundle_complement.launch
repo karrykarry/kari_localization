@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 	<!-- <rosparam file="$(find params)/run_test/init_pose.yaml" /> -->
-	<node name="imu_complement" pkg="kari_complement" type="imu_complement" output= "screen" />
+	<node name="bundle_complement" pkg="kari_complement" type="bundle_complement" output= "screen" />
 	<param name="header_frame" value="/map" />	
 	<param name="child_frame" value="/matching_base_link3" />
 	<param name="init_x" value="0.0" />
@@ -13,7 +13,7 @@
 	<param name="ekf_topic" value="/ekf_NDT" />
 
 	<!-- 0:odom 1:imu 2:ndt 3:ekf -->
-	<param name="estimate_result" value="1" />
+	<param name="estimate_result" value="3" />
 
 </launch>
 
