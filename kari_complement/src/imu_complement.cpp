@@ -20,6 +20,7 @@
 
 using namespace std;	
 
+// 0:odom 1:imu 2:ndt 3:ekf
 const size_t N = 4;
 
 class Complement{
@@ -77,8 +78,9 @@ class Complement{
 
 		bool spin()
 		{
+				
 			ros::Rate loop_rate(r);
-
+			
 			while(ros::ok()){
 				if(flag)prepare();
 				else start();
@@ -135,10 +137,18 @@ Complement::Complement(ros::NodeHandle &n) :
 	lcl_vis.header.frame_id = HEADER_FRAME;
 	lcl_vis.child_frame_id = CHILD_FRAME;
 
-	if(type == 0)cout<<"odom_result"<<endl;
-	else if(type == 1)cout<<"imu_result"<<endl;
-	else if(type == 2)cout<<"ndt_result"<<endl;
-	else cout<<"ekf_result"<<endl;
+	try{
+		if(type == 0)cout<<"odom_result"<<endl;
+		else if(type == 1)cout<<"imu_result"<<endl;
+		else if(type == 2)cout<<"ndt_result"<<endl;
+		else if(type == 3)cout<<"ekf_result"<<endl;
+		else throw "error:This paramer is not available";
+	}
+	catch(char *errstr){
+		cout<< errstr << endl;
+	
+	}
+
 
 	num = 0;
 
@@ -281,9 +291,7 @@ int main (int argc, char** argv){
 	ros::NodeHandle n;
 
 	cout<<"------complement start---------"<<endl;
-
 	Complement complement(n);
-
 	complement.spin();
 
 	return 0;
