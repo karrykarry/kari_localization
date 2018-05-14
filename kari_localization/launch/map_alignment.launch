@@ -12,15 +12,14 @@
         <param name="init_yaw" value="0.0" />
 
 
-		<!-- <param name="lidar_topic" value="/velodyne_obstacles" /> -->
-		<!-- <param name="odom_topic" value="/lcl_ndt" /> -->
-		<!-- <param name="ndt_topic" value="/sq_ndt_data" /> -->
+		<param name="lidar_topic" value="/velodyne_obstacles" />
+		<param name="odom_topic" value="/lcl_ekf" />
+		<param name="ndt_topic" value="/sq_ndt_data" />
 
 		<!-- <param name="lidar_topic" value="/sq_lidar/points/lcl" /> -->
-		<param name="lidar_topic" value="/sq_lidar/points/tf" />
-		<!-- <param name="odom_topic" value="/lcl_sq_imu" /> -->
-		<param name="odom_topic" value="/lcl_sq_ekf" />
-		<param name="ndt_topic" value="/sq_ndt_data" />
+		<!-- <param name="lidar_topic" value="/sq_lidar/points/tf" /> -->
+		<!-- <param name="odom_topic" value="/lcl_sq_ekf" /> -->
+		<!-- <param name="ndt_topic" value="/sq_ndt_data" /> -->
 
 </launch>
 

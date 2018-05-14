@@ -1,6 +1,6 @@
 # 1.d_kan_around
-# map: {d_kan_around : /home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/d_kan_around_si2017_gicp_ds.pcd }
+map: {d_kan_around : /home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/d_kan_around_si2017_gicp_ds.pcd }
 # 2.d_kan_indoor
-map: {d_kan_around : /home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/d_kan_indoor.pcd }
+# map: {d_kan_around : /home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/d_kan_indoor.pcd }
 
 
