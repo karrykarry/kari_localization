@@ -1,7 +1,8 @@
 //
 //estimate_result で使いたい値を選択
 //
-//gyro:imu
+//gyro:amu
+//
 //
 #include <stdio.h>
 #include <iostream>
@@ -70,7 +71,7 @@ class Complement{
 	public:
 		Complement(ros::NodeHandle& n);
 		void odomCallback(const nav_msgs::Odometry::Ptr msg);
-		void imuCallback(const sensor_msgs::Imu::Ptr msg);
+		void amuCallback(const ceres_msgs::AMU_data::Ptr msg);
 		void ndtCallback(const nav_msgs::Odometry msg);
 		void ekfCallback(const nav_msgs::Odometry msg);
 
@@ -127,12 +128,12 @@ Complement::Complement(ros::NodeHandle &n) :
 	for(size_t i=0;i<N;i++) lcl[i].start();
 
 	odm_sub = n.subscribe(ODOM_TOPIC, 100, &Complement::odomCallback, this);
-	amu_sub = n.subscribe(IMU_TOPIC, 100, &Complement::imuCallback, this);
+	amu_sub = n.subscribe(IMU_TOPIC, 100, &Complement::amuCallback, this);
 	ndt_sub = n.subscribe(NDT_TOPIC, 100, &Complement::ndtCallback, this);
     ekf_sub = n.subscribe(EKF_TOPIC, 100, &Complement::ekfCallback, this);
 
 	lcl_pub = n.advertise<nav_msgs::Odometry>(PUB_TOPIC, 10);
-	lcl_vis_pub = n.advertise<nav_msgs::Odometry>("/lcl_vis", 10);
+	lcl_vis_pub = n.advertise<nav_msgs::Odometry>("/lcl__vis", 10);
 	lcl_hantei_pub = n.advertise<std_msgs::Int32>("/hantei", 10);
 
 	lcl_.header.frame_id = HEADER_FRAME;
@@ -142,7 +143,7 @@ Complement::Complement(ros::NodeHandle &n) :
 
 	try{
 		if(type == 0)cout<<"odom_result"<<endl;
-		else if(type == 1)cout<<"imu_result"<<endl;
+		else if(type == 1)cout<<"amu_result"<<endl;
 		else if(type == 2)cout<<"ndt_result"<<endl;
 		else if(type == 3)cout<<"ekf_result"<<endl;
 		else throw "error:This paramer is not available";
@@ -181,36 +182,26 @@ Complement::odomCallback(const nav_msgs::Odometry::Ptr msg){
 
 
 void 
-Complement::imuCallback(const sensor_msgs::Imu::Ptr imu){
+Complement::amuCallback(const ceres_msgs::AMU_data::Ptr msg){	
+
+    fflush(stdout);
 	
-	fflush(stdout);
+	lcl[0].pitch = M_PI * msg->pitch / 180.0;
+	lcl[1].pitch = M_PI * msg->pitch / 180.0;
 
-    tf::Quaternion orientation;
-    tf::quaternionMsgToTF(imu->orientation, orientation);
-    tfScalar yaw, pitch, roll;
-    tf::Matrix3x3(orientation).getEulerYPR(yaw, pitch, roll);
+	lcl[1].w = - M_PI * (msg->dyaw - 0.273163) / 180.0;
 
-    if(yaw_first_flag){
-        yaw_first = yaw;
-        yaw_first_flag = false;
-    }
-	
+	lcl[1].altering();
 
-    lcl[0].pitch = pitch;
-	lcl[1].pitch = pitch;
-
-    lcl[1].yaw = yaw - yaw_first;
-    lcl[1].roll = roll;
+    cout <<"dyaw"<<lcl[1].w<<endl;
+ 
+    //num 10でekfのsigmaを変更 
+    if(lcl[1].w < -0.05 || 0.05 < lcl[1].w){ //小さいほうがndtが吹っ飛ぶ前に補正できる//1[deg] = 0.017[rad]
     
-    lcl[1].d_yaw = lcl[1].yaw - yaw_before;
-    yaw_before = lcl[1].yaw;
-
-    lcl[1].altering3();
-
-	//回転
-    if(lcl[1].d_yaw < -0.0015 || 0.0015 < lcl[1].d_yaw){ //小さいほうがndtが吹っ飛ぶ前に補正できる//1[deg] = 0.017[rad]
     num = 10;
+
     }
+
     else num = 0;
 }
 
@@ -289,7 +280,7 @@ Complement::start(){
 
 
 int main (int argc, char** argv){
-	ros::init(argc,argv,"imu_complement");
+	ros::init(argc,argv,"amu_complement");
 	ros::NodeHandle n;
 
 	cout<<"------complement start---------"<<endl;
@@ -298,3 +289,4 @@ int main (int argc, char** argv){
 
 	return 0;
 }
+
