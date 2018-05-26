@@ -7,8 +7,8 @@
 #include <pcl/filters/approximate_voxel_grid.h>
 
 
-const static int N = 3;
-const static int M = 5;
+const static int N = 200;
+const static int M = 200;
 
 //filterは3×3を想定している(画像処理とかの平均化フィルタ)
 const static int N_F = 3;
