@@ -133,7 +133,7 @@ Complement::Complement(ros::NodeHandle &n) :
     ekf_sub = n.subscribe(EKF_TOPIC, 100, &Complement::ekfCallback, this);
 
 	lcl_pub = n.advertise<nav_msgs::Odometry>(PUB_TOPIC, 10);
-	lcl_vis_pub = n.advertise<nav_msgs::Odometry>("/lcl__vis", 10);
+	lcl_vis_pub = n.advertise<nav_msgs::Odometry>("/lcl_vis", 10);
 	lcl_hantei_pub = n.advertise<std_msgs::Int32>("/hantei", 10);
 
 	lcl_.header.frame_id = HEADER_FRAME;
