@@ -26,11 +26,11 @@ void voxel_grid(float size,pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,pcl::PointC
 
 }
 
-void smoothing(int input_data[N][M],int filter[N_F][N_F],int output_data[N][M]){
+void smoothing(float input_data[N][M],int filter[N_F][N_F],float output_data[N][M]){
 
 	//周りを0にするために
-	int swap[N+2][M+2] = {0};//N+2,M+2
-	int swap_[N+2][M+2] = {0};//N+2,M+2
+	float swap[N+2][M+2] = {0};//N+2,M+2
+	float swap_[N+2][M+2] = {0};//N+2,M+2
 
 	//swapに保存
 	for(int i=1;i< N+1;i++){
@@ -52,7 +52,7 @@ void smoothing(int input_data[N][M],int filter[N_F][N_F],int output_data[N][M]){
 }
 
 
-void grad(int output[N][M],int out_x[N][M],int out_y[N][M]){
+void grad(float output[N][M],float out_x[N][M],float out_y[N][M]){
 
 	for(int i=0;i<N;i++){
 		for(int j=0;j<M;j++){

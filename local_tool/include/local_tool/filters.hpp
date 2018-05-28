@@ -19,10 +19,10 @@ void map_reader(float size, std::string file,pcl::PointCloud<pcl::PointXYZ>::Ptr
 void voxel_grid(float size,pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,pcl::PointCloud<pcl::PointXYZ>::Ptr &filtered_cloud);
 
 //平滑化
-void smoothing(int input_data[N][M],int filter[N_F][N_F],int output_data[N][M]);
+void smoothing(float input_data[N][M],int filter[N_F][N_F],float output_data[N][M]);
 
 //勾配を算出
-void grad(int output[N][M],int out_x[N][M],int out_y[N][M]);
+void grad(float output[N][M],float out_x[N][M],float out_y[N][M]);
 
 #endif
 
