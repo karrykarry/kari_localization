@@ -4,8 +4,9 @@
 	<node pkg="kari_localization" type="map_alignment" name="alignment" output="screen" />
         <param name="laser_voxel_size" value="0.15" />
         <param name="map_voxel_size" value="0.5" />
-        <param name="map_limit" value="19.0" />
-        <param name="laser_limit" value="17.0" />
+        <!-- <param name="map_limit" value="19.0" /> -->
+        <param name="map_limit" value="50.0" />
+        <param name="laser_limit" value="30.0" />
         <param name="init_x" value="0.0" />
         <param name="init_y" value="0.0" />
         <param name="init_z" value="0.0" />
