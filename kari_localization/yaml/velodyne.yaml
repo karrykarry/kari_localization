@@ -1,0 +1,5 @@
+laser_pub : "/laser_vis" 
+# laser_sub : "/velodyne_points"
+laser_sub : "/velodyne_obstacles"
+header_frame : "/velodyne"
+
