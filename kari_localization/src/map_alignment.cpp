@@ -30,9 +30,8 @@
 #include <math.h>
 
 #include <local_tool/filters.hpp>
-// #include "filters_kari.hpp"
-#include "mathematics.hpp"
-#include "registration.hpp"
+#include <local_tool/mathematics.hpp>
+#include <local_tool/registration.hpp>
 
 
 typedef pcl::PointXYZINormal PointN;

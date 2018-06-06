@@ -125,7 +125,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 
-include_directories(include/tool)
+# include_directories(include/tool)
 include_directories(
 	include
   ${catkin_INCLUDE_DIRS}
@@ -141,13 +141,13 @@ add_definitions(
 )
 
 
-## Declare a C++ library
-add_library(tool
-
-	src/tool/registration.cpp
-	src/tool/mathematics.cpp
-	src/tool/filters_kari.cpp
-)
+# Declare a C++ library
+# add_library(tool
+#
+# 	src/tool/registration.cpp
+# 	src/tool/mathematics.cpp
+# 	src/tool/filters_kari.cpp
+# )
 
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -184,14 +184,14 @@ add_executable(map_alignment src/map_alignment.cpp)
 add_executable(vis_laser src/vis_laser.cpp)
 
 target_link_libraries(registration_master
-	tool
+	local_tool
 	${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
 )
 
 
 target_link_libraries(map_alignment
-	tool
+	local_tool
 	${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
 )
