@@ -11,6 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
+  geometry_msgs
+  tf
+  nav_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -142,6 +146,8 @@ add_definitions(
 add_library(local_tool
 
 	src/filters.cpp
+	src/mathematics.cpp
+	src/registration.cpp
 )
 
 
