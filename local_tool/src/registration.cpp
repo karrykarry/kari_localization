@@ -33,6 +33,7 @@ Eigen::Matrix4f registration_icp(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_tgt,
 	return icp.getFinalTransformation();
 }
 
+
 Eigen::Matrix4f registration_ndt(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tgt, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_src){
 	pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 	ndt.setTransformationEpsilon(0.001);
@@ -57,6 +58,24 @@ Eigen::Matrix4f registration_ndt(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tgt, 
 
 	return ndt.getFinalTransformation();
 }
+
+
+Eigen::Matrix4f registration_icp_vis(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tgt, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_src,  pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud){
+	pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+	icp.setMaxCorrespondenceDistance(1.0);		//対応距離の最大値
+	icp.setMaximumIterations(100); 				//ICPの最大繰り返し回数
+	icp.setTransformationEpsilon(1e-8);			//RANSAC除去距離
+	icp.setEuclideanFitnessEpsilon(1e-8);		//変換パラメータ値
+
+	icp.setInputSource(cloud_src);
+	icp.setInputTarget(cloud_tgt);
+	icp.align(*cloud);
+
+	return icp.getFinalTransformation();
+}
+
+
+
 
 
 //outputをvisual化
