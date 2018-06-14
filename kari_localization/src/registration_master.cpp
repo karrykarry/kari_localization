@@ -78,7 +78,8 @@ int main (int argc, char** argv)
 
 	Eigen::Matrix4f a;
 
-	a = registration_ndt_vis(target_cloud,input_cloud,output_cloud);
+	// a = registration_ndt_vis(target_cloud,input_cloud,output_cloud);
+	a = registration_icp_vis(target_cloud,input_cloud,output_cloud);
 
 	cout<<"ndt"<<endl;
 
@@ -87,10 +88,11 @@ int main (int argc, char** argv)
 
 	calc_rpy(a,l_roll,l_pitch,l_yaw);
 	
-	//////////////////変換行列から得た答え           
-
+	//////////////////変換行列から得た答え          
+	//
 	cout<<"t(0,3) : "<<a(0, 3)<<endl;
 	cout<<"t(1,3) : "<<a(1, 3)<<endl;
+	cout<<"t(2,3) : "<<a(1, 3)<<endl;
 	cout<<"l_roll : "<<l_roll<<endl;
 	cout<<"l_pitch : "<<l_pitch<<endl;
 	cout<<"l_yaw : "<<l_yaw<<endl;

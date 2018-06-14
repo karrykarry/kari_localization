@@ -182,6 +182,8 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 add_executable(registration_master src/registration_master.cpp)
 add_executable(map_alignment src/map_alignment.cpp)
 add_executable(vis_laser src/vis_laser.cpp)
+add_executable(mesh_before src/mesh_before.cpp)
+add_executable(mesh src/mesh.cpp)
 
 target_link_libraries(registration_master
 	local_tool
@@ -198,8 +200,20 @@ target_link_libraries(map_alignment
 
 target_link_libraries(vis_laser
 	${catkin_LIBRARIES}
-    # ${PCL_LIBRARIES}
 )
+
+
+target_link_libraries(mesh_before
+	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
+
+
+target_link_libraries(mesh
+	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############

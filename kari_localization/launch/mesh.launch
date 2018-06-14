@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+	<rosparam file="$(find kari_localization)/yaml/clouds.yaml" />
+	<node pkg="kari_localization" type="mesh2" name="mesh2" output="screen" />
+		<param name="mesh_mu" value="2.5" />
+		<param name="mesh_max_neighbors" value="100" />
+		<param name="mesh_radius" value="0.5" />
+		<param name="mesh_normalconsistency" value="false" />
+
+		<param name="normal_ksearch" value="20" />
+
+</launch>
+
