@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/Imu.h>
-#include <ceres_msgs/AMU_data.h>
+// #include <ceres_msgs/AMU_data.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
@@ -209,7 +209,8 @@ Complement::imuCallback(const sensor_msgs::Imu::Ptr imu){
 
 	//回転
     if(lcl[1].d_yaw < -0.0015 || 0.0015 < lcl[1].d_yaw){ //小さいほうがndtが吹っ飛ぶ前に補正できる//1[deg] = 0.017[rad]
-    num = 10;
+    // num = 10;
+    num = 0;
     }
     else num = 0;
 }

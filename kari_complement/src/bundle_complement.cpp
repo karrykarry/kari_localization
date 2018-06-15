@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/Imu.h>
-#include <ceres_msgs/AMU_data.h>
+// #include <ceres_msgs/AMU_data.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
@@ -28,7 +28,7 @@ class Complement{
 		ros::NodeHandle n;
 		ros::Rate r;
 		ros::Subscriber odm_sub;
-		ros::Subscriber amu_sub;
+		ros::Subscriber imu_sub;
 		ros::Subscriber ndt_sub;
 		ros::Subscriber ekf_sub;
 
@@ -129,7 +129,7 @@ Complement::Complement(ros::NodeHandle &n) :
 	for(size_t i=0;i<N;i++) lcl[i].start();
 
 	odm_sub = n.subscribe(ODOM_TOPIC, 100, &Complement::odomCallback, this);
-	amu_sub = n.subscribe(IMU_TOPIC, 100, &Complement::imuCallback, this);
+	imu_sub = n.subscribe(IMU_TOPIC, 100, &Complement::imuCallback, this);
 	ndt_sub = n.subscribe(NDT_TOPIC, 100, &Complement::ndtCallback, this);
     ekf_sub = n.subscribe(EKF_TOPIC, 100, &Complement::ekfCallback, this);
 
