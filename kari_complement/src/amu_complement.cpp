@@ -52,9 +52,9 @@ class Complement{
 
 		tfScalar yaw_first;
 
+		bool flag;
 		bool yaw_first_flag;
 		bool w_first_flag;
-		bool flag;
 
 		double w_first;
 		double yaw_before;
