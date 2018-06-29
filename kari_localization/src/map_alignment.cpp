@@ -204,7 +204,7 @@ void
 Align::local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
 {
     //limit_laserを設定
-    float d = 0 ;
+    float d = 0;
 	local_map_cloud->points.clear();
 	
     size_t velodyne_size = input_point->points.size();
@@ -237,7 +237,8 @@ Align::maptolidar()
 	local_map(filtered_map_cloud);
 
 	Matrix4f a;
-	a = map_ndt_vis(local_map_cloud,filtered_laser_cloud,output_cloud,odo);
+	// a = map_ndt_vis(local_map_cloud,filtered_laser_cloud,output_cloud,odo);
+	a = map_icp_vis(local_map_cloud,filtered_laser_cloud,output_cloud,odo);
 
 	calc_rpy(a,l_roll,l_pitch,l_yaw);
 

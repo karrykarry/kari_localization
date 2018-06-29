@@ -11,6 +11,7 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <boost/thread/thread.hpp>
 
+#include <nav_msgs/Odometry.h>
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Point.h>
@@ -37,8 +38,12 @@ class Regi
 		ros::Publisher ipt_pub;
 		ros::Publisher out_pub;
 
+		ros::Publisher tf_pub;
+		
 		ros::Subscriber lidar_sub;
 		ros::Subscriber camera_sub;
+
+		nav_msgs::Odometry odo;
 
 
 		pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud;
@@ -90,6 +95,7 @@ Regi::Regi(ros::NodeHandle &n) :
 	ipt_pub  = n.advertise<sensor_msgs::PointCloud2>("/input_cloud", 1);
 	out_pub  = n.advertise<sensor_msgs::PointCloud2>("/lidar2zed", 1);
 
+	tf_pub  = n.advertise<nav_msgs::Odometry>("/lidar2camera", 100);
 
 	lidar_sub = n.subscribe(LIDAR_TOPIC,1000,&Regi::lidarCallback,this);
 	camera_sub = n.subscribe(CAMERA_TOPIC,1000,&Regi::cameraCallback,this);
@@ -155,9 +161,21 @@ Regi::alignment(void){
 	pc2.header.stamp = ros::Time::now();
 	pc3.header.stamp = ros::Time::now();
 
+	odo.header.stamp = ros::Time::now();
+	odo.pose.pose.position.x = a(0,3);
+	odo.pose.pose.position.y = a(1,3);
+	odo.pose.pose.position.z = a(2,3);
+	odo.pose.pose.orientation.x = l_roll;
+	odo.pose.pose.orientation.y = l_pitch;
+	odo.pose.pose.orientation.z = l_yaw;
+
+
+
 	trg_pub.publish(pc);
 	ipt_pub.publish(pc2);
 	out_pub.publish(pc3);
+	
+	tf_pub.publish(odo);
 
 }
 

@@ -1,6 +1,8 @@
 laser_pub : "/laser_vis" 
-# laser_sub : "/sq_lidar/points/lcl"
-laser_sub : "/sq_lidar/points/tf"
-header_frame : "/centerlaser3_"
+# laser_sub : "/cloud/lcl"
+laser_sub : "/sq_lidar/points/lcl"
+# laser_sub : "/sq_lidar/points/tf"
+# header_frame : "/centerlaser3_"
+header_frame : "/centerlaser2_"
 
 
