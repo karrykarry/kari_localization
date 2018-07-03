@@ -246,6 +246,9 @@ Complement::start(){
 
 // 0:odom 1:imu 2:ndt 3:ekf
 
+
+	double u;
+
 	lcl_.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
 	lcl_.pose.pose.position.x = lcl[type].x;
 	lcl_.pose.pose.position.y = lcl[type].y;
@@ -254,12 +257,14 @@ Complement::start(){
 
 	lcl_pub.publish(lcl_);
 
+	u = (double)lcl[type].yaw;
+
 
 	lcl_vis.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
 	lcl_vis.pose.pose.position.x = lcl[type].x;
 	lcl_vis.pose.pose.position.y = lcl[type].y;
 	lcl_vis.pose.pose.position.z = 0.0;	
-	lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw(lcl[type].z) ;
+	lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw(u) ;
 
 	lcl_vis_pub.publish(lcl_vis);
 

@@ -67,6 +67,8 @@ class Complement{
 		string EKF_TOPIC;
 		string PUB_TOPIC;
 		int type;
+
+
 	public:
 		Complement(ros::NodeHandle& n);
 		void odomCallback(const nav_msgs::Odometry::Ptr msg);
@@ -84,7 +86,7 @@ class Complement{
 			
 			while(ros::ok()){
 
-				cout <<flag<<endl; 
+				// cout <<flag<<endl; 
 
 
 				if(flag)prepare();
@@ -260,20 +262,29 @@ Complement::start(){
 
 // 0:odom 1:imu 2:ndt 3:ekf
 
+	double u;
+
+
 	lcl_.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
 	lcl_.pose.pose.position.x = lcl[type].x;
 	lcl_.pose.pose.position.y = lcl[type].y;
 	lcl_.pose.pose.position.z = 0.0;
+	// lcl_.pose.pose.position.z = lcl[1].z;
+	// lcl_.pose.pose.orientation.x = lcl[1].roll;
+	// lcl_.pose.pose.orientation.y = lcl[1].pitch;
 	lcl_.pose.pose.orientation.z = lcl[type].yaw;
 
 	lcl_pub.publish(lcl_);
+
+	u = (double)lcl[type].yaw;
 
 
 	lcl_vis.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
 	lcl_vis.pose.pose.position.x = lcl[type].x;
 	lcl_vis.pose.pose.position.y = lcl[type].y;
 	lcl_vis.pose.pose.position.z = 0.0;	
-	lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw(lcl[type].z) ;
+	// lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw((double)lcl[type].z) ;
+	lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw(u) ;
 
 	lcl_vis_pub.publish(lcl_vis);
 
