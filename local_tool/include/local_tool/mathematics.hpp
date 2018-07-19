@@ -9,8 +9,11 @@
 #include <Eigen/LU>
 #include <Eigen/Eigenvalues>
 
+#include<iostream>
+
 void calc_rpy(Eigen::Matrix4f a,double &roll,double &pitch,double &yaw);
 float distance(float x,float y);
+void xy2rtheta(double x,double y, double &r, double &theta);
 
 #endif
 

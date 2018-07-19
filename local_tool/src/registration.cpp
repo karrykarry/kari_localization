@@ -134,7 +134,7 @@ Eigen::Matrix4f map_icp_vis(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tgt, pcl::
 	// pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 	icp.setInputTarget(filtered_cloud_tgt);
 	icp.setInputSource(filtered_cloud_src);
-	// ndt.align(*cloud);
+	// icp.align(*cloud);
     icp.align (*cloud, init_guess);
 
 	return icp.getFinalTransformation();
