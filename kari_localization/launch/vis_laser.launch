@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-	<rosparam file="$(find kari_localization)/yaml/hsd3d.yaml" />
-	<!-- <rosparam file="$(find kari_localization)/yaml/velodyne.yaml" /> -->
+	<!-- <rosparam file="$(find kari_localization)/yaml/hsd3d.yaml" /> -->
+	<rosparam file="$(find kari_localization)/yaml/velodyne.yaml" />
 	<node pkg="kari_localization" type="vis_laser" name="vis_laser" output="screen" />
 </launch>
 

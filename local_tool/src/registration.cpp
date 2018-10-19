@@ -5,8 +5,8 @@
 
 Eigen::Matrix4f registration_icp(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tgt, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_src){
 	pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-	icp.setMaxCorrespondenceDistance(0.1);
-	icp.setMaximumIterations(100);
+	icp.setMaxCorrespondenceDistance(0.5);
+	icp.setMaximumIterations(20);
 	icp.setTransformationEpsilon(1e-8);
 	icp.setEuclideanFitnessEpsilon(1e-8);
 

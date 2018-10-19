@@ -145,6 +145,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 add_executable(bundle_complement src/bundle_complement.cpp)
 add_executable(imu_complement src/imu_complement.cpp)
 add_executable(amu_complement src/amu_complement.cpp)
+add_executable(imu_to_amu src/imu_to_amu.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -172,6 +173,11 @@ target_link_libraries(imu_complement
 target_link_libraries(amu_complement
   ${catkin_LIBRARIES}
 )
+
+target_link_libraries(imu_to_amu
+  ${catkin_LIBRARIES}
+)
+
 
 #############
 ## Install ##

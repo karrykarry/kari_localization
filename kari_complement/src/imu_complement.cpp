@@ -280,11 +280,12 @@ Complement::start(){
 
 
 	lcl_vis.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
-	lcl_vis.pose.pose.position.x = lcl[type].x;
-	lcl_vis.pose.pose.position.y = lcl[type].y;
+	lcl_vis.pose.pose.position.x = lcl[1].x;
+	lcl_vis.pose.pose.position.y = lcl[1].y;
 	lcl_vis.pose.pose.position.z = 0.0;	
 	// lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw((double)lcl[type].z) ;
-	lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw(u) ;
+	// lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw(lcl[type].yaw) ;
+	lcl_vis.pose.pose.orientation.z = lcl[1].yaw;
 
 	lcl_vis_pub.publish(lcl_vis);
 

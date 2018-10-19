@@ -49,8 +49,8 @@ class Broad
 };
 
 Broad::Broad(ros::NodeHandle &n) :
-	flag(true),
-	r(10)
+	r(10),
+	flag(true)
 {
 	n.getParam("parent_frame",PARENT_FRAME);
 	n.getParam("child_frame",CHILD_FRAME);

@@ -182,7 +182,11 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 add_executable(registration_master src/registration_master.cpp)
 add_executable(lidar2zed src/lidar2zed.cpp)
 add_executable(map_alignment src/map_alignment.cpp)
+add_executable(map_alignment_add_height src/map_alignment_add_height.cpp)
+add_executable(slam src/slam.cpp)
+add_executable(slam2 src/slam2.cpp)
 add_executable(vis_laser src/vis_laser.cpp)
+add_executable(vis_laser_intensity src/vis_laser_intensity.cpp)
 add_executable(mesh_before src/mesh_before.cpp)
 add_executable(mesh src/mesh.cpp)
 add_executable(tf_odom src/tf_odom.cpp)
@@ -200,17 +204,44 @@ target_link_libraries(lidar2zed
     ${PCL_LIBRARIES}
 )
 
-
-
 target_link_libraries(map_alignment
 	local_tool
 	${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
 )
 
-target_link_libraries(vis_laser
+
+target_link_libraries(map_alignment_add_height
+	local_tool
 	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
 )
+
+
+target_link_libraries(slam
+	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
+
+
+target_link_libraries(slam2
+	local_tool
+	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
+
+target_link_libraries(vis_laser
+	local_tool
+	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
+
+target_link_libraries(vis_laser_intensity
+	local_tool
+	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
+
 
 target_link_libraries(tf_odom
 	${catkin_LIBRARIES}
@@ -226,6 +257,18 @@ target_link_libraries(mesh
 	${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
 )
+
+
+
+add_executable(get_height src/get_height.cpp)
+target_link_libraries(get_height
+	local_tool
+	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
+
+
+
 
 #############
 ## Install ##

@@ -16,7 +16,7 @@
 	<param name="publish_topic" value="/lcl_ekf" />
 
 	<!-- 0:odom 1:imu 2:ndt 3:ekf -->
-	<param name="estimate_result" value="3" />
+	<param name="estimate_result" value="1" />
 	
 
 </launch>

@@ -1,5 +1,10 @@
 laser_pub : "/laser_vis" 
-# laser_sub : "/velodyne_points"
-laser_sub : "/velodyne_obstacles"
-header_frame : "/velodyne"
+laser_sub : "/drivable_point"
+# laser_sub : "/perfect_velodyne/normal"
+# laser_sub : "/velodyne_obstacles"
+header_frame : "/velodyne2"
+# header_frame : "/velodyne_"
+# header_frame : "/matching_base_link"
+# header_frame : "/base_link"
+# header_frame : "/map"
 

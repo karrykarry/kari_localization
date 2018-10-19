@@ -1,6 +1,15 @@
 # 1.d_kan_around
 # map: {d_kan_around : /home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/d_kan_around_si2017_gicp_ds.pcd }
 # 2.d_kan_indoor
-map: {d_kan_around : /home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/d_kan_indoor.pcd }
+# map: {d_kan_around : /home/amsl/ros_catkin_ws/src/kari_master/kari_localization/sample_pcd/d_kan_indoor.pcd }
+# 3.tsukuba
+# map: {d_kan_around : /home/amsl/tsukuba_0804_0.pcd }
+
+# map: {d_kan_around : /home/amsl/Desktop/kakunin_soukou_0.5-2.pcd }
+
+# map: {d_kan_around : /home/amsl/Desktop/kakunin.pcd }
+map: {d_kan_around : /home/amsl/Desktop/mapnoground_kakunin.pcd }
 
 
+
+map: {d_kan_around : /home/amsl/Desktop/sadyne_rm_human_normal.pcd }

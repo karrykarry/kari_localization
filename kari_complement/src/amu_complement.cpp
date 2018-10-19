@@ -193,10 +193,10 @@ Complement::amuCallback(const ceres_msgs::AMU_data::Ptr msg){
 
 	lcl[1].altering();
 
-    cout <<"dyaw"<<lcl[1].w<<endl;
+    // cout <<"dyaw"<<lcl[1].w<<endl;
  
     //num 10でekfのsigmaを変更 
-    if(lcl[1].w < -0.05 || 0.05 < lcl[1].w){ //小さいほうがndtが吹っ飛ぶ前に補正できる//1[deg] = 0.017[rad]
+    if(lcl[1].w < -0.001 || 0.001 < lcl[1].w){ //小さいほうがndtが吹っ飛ぶ前に補正できる//1[deg] = 0.017[rad]
     
     num = 10;
 
@@ -249,7 +249,8 @@ Complement::start(){
 
 	double u;
 
-	lcl_.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
+	// lcl_.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
+	lcl_.header.stamp = ros::Time(0); //timestampのメッセージを送ろうとしている
 	lcl_.pose.pose.position.x = lcl[type].x;
 	lcl_.pose.pose.position.y = lcl[type].y;
 	lcl_.pose.pose.position.z = 0.0;
@@ -260,7 +261,8 @@ Complement::start(){
 	u = (double)lcl[type].yaw;
 
 
-	lcl_vis.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
+	// lcl_vis.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
+	lcl_vis.header.stamp = ros::Time(0); //timestampのメッセージを送ろうとしている
 	lcl_vis.pose.pose.position.x = lcl[type].x;
 	lcl_vis.pose.pose.position.y = lcl[type].y;
 	lcl_vis.pose.pose.position.z = 0.0;	
@@ -279,6 +281,7 @@ Complement::start(){
 	q.setRPY(0, 0, lcl[type].yaw);
 
 	transform.setRotation(q);
+	// br.sendTransform(tf::StampedTransform(transform, lcl_.header.stamp , HEADER_FRAME, CHILD_FRAME));
 	br.sendTransform(tf::StampedTransform(transform, lcl_.header.stamp , HEADER_FRAME, CHILD_FRAME));
 
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+	<node pkg="kari_localization" type="tf_odom" name="tf_odom" output="screen" />
+
+		<param name="parent_frame" value="/centerlaser" />
+		<param name="child_frame" value="/zed0/zed_center" />
+		<param name="odom_sub" value="/lidar2camera" />
+		
+
+
+
+</launch>
+
+
+
