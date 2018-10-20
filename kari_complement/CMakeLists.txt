@@ -179,6 +179,12 @@ target_link_libraries(imu_to_amu
 )
 
 
+add_executable(imu_complement_add_height src/imu_complement_add_height.cpp)
+target_link_libraries(imu_complement_add_height
+  ${catkin_LIBRARIES}
+)
+
+
 #############
 ## Install ##
 #############
