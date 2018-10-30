@@ -145,14 +145,14 @@ Eigen::Matrix4f map_ndt_vis(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tgt, pcl::
 	pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 	ndt.setTransformationEpsilon(0.001);
 	ndt.setStepSize(0.1);
-	ndt.setResolution(2.0);//1.0 change 05/09
+	ndt.setResolution(1.0);//1.0 change 05/09
 	ndt.setMaximumIterations(35);
 
 	/*------ Voxel Grid ------*/
 	pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud_src (new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud_tgt (new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::VoxelGrid<pcl::PointXYZ> vg;
-	vg.setLeafSize(0.5,0.5,0.5);
+	vg.setLeafSize(0.3,0.3,0.3);
 	vg.setInputCloud(cloud_src);
 	vg.filter(*filtered_cloud_src);
 	vg.setInputCloud(cloud_tgt);
@@ -163,8 +163,6 @@ Eigen::Matrix4f map_ndt_vis(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tgt, pcl::
 	Eigen::Translation3f init_translation (odo.pose.pose.position.x, odo.pose.pose.position.y, odo.pose.pose.position.z);
 
 	Eigen::Matrix4f init_guess = (init_translation * init_rotation).matrix ();
-
-
 
 	// pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 	ndt.setInputTarget(filtered_cloud_tgt);

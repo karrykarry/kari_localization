@@ -133,8 +133,6 @@ Align::Align(ros::NodeHandle& n) :
 	vis_voxel_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_result", 1000);
 	vis_map_pub = n.advertise<sensor_msgs::PointCloud2>("/vis_map", 1000);
 
-
-
 	// cout << "-------PARAMETARS----------" << endl;
 	cout << "map_name：" << map_file << endl;
 
@@ -150,7 +148,7 @@ Align::odomCallback(const nav_msgs::Odometry::Ptr msg){
 
 	x_now = msg->pose.pose.position.x;
 	y_now = msg->pose.pose.position.y;
-	z_now = 0;
+	z_now = -0.8;
 
 	yaw_now = msg->pose.pose.orientation.z;
 }
@@ -177,7 +175,7 @@ Align::velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input){
         
         // if(-0.3 + z_now < temp_point.z && temp_point.z <4.0 + z_now){//つくば
         // if((1.5 <= d &&d <= laser_limit)&&(-0.3 + z_now < temp_point.z && temp_point.z <2.0 + z_now)) {//つくば
-        if(1.5 <= d &&d <= laser_limit){//つくば
+        if(0 <= d &&d <= laser_limit){//つくば
 
 			limit_input_cloud->points.push_back(temp_point);
 	

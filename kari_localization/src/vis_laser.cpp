@@ -37,7 +37,6 @@ class Laser
 		ros::NodeHandle n;
 		ros::Rate r;
 		ros::Subscriber laser_sub;
-
 		ros::Publisher laser_pub;
 
 		string HEADER_FRAME;
@@ -84,7 +83,8 @@ Laser::laserCallback(const sensor_msgs::PointCloud2Ptr msg){
 
      pcl::toROSMsg(*limit_input_cloud,velo2);
     
-	 velo2.header.stamp = msg->header.stamp;
+	 // velo2.header.stamp = msg->header.stamp;
+	 velo2.header.stamp =  ros::Time::now();
 	 velo2.header.frame_id = HEADER_FRAME;
 
     laser_pub.publish(velo2);

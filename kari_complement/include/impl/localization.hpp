@@ -26,10 +26,12 @@ void Localization::altering(){
 	double dt = sw.getTime();
 	sw.reset();
 	yaw += dt * w;
-	// if(yaw<-M_PI)yaw += 2*M_PI;
-	//if(yaw>M_PI)yaw -= 2*M_PI;
-	x += dt * v * cos(pitch) * cos(yaw);
-	y += dt * v * cos(pitch) * sin(yaw);
+	if(yaw<-M_PI)yaw += 2*M_PI;
+	if(yaw>M_PI)yaw -= 2*M_PI;
+	// x += dt * v * cos(pitch) * cos(yaw);
+	// y += dt * v * cos(pitch) * sin(yaw);
+	x += dt * v * cos(yaw);
+	y += dt * v * sin(yaw);
 }
 void Localization::altering2(){
 	// double dt = 3.0 * sw.getTime();

@@ -250,8 +250,8 @@ Align::maptolidar()
 	local_map(filtered_map_cloud);
 
 	Matrix4f a;
-	// a = map_ndt_vis(local_map_cloud,filtered_laser_cloud,output_cloud,odo);
-	a = map_icp_vis(local_map_cloud,filtered_laser_cloud,output_cloud,odo);
+	a = map_ndt_vis(local_map_cloud,filtered_laser_cloud,output_cloud,odo);
+	//a = map_icp_vis(local_map_cloud,filtered_laser_cloud,output_cloud,odo);
 
 	calc_rpy(a,l_roll,l_pitch,l_yaw);
 

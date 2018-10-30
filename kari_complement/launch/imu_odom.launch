@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+	<node name="imu_complement" pkg="kari_complement" type="imu_odom" output= "screen" />
+	
+	<param name="header_frame" value="/map" />	
+	<param name="child_frame" value="/matching_base_link" />
+	<param name="init_x" value="0.0" />
+	<param name="init_y" value="0.0" />
+	<param name="init_yaw" value="0.0" />
+	<param name="dyaw/drift" value="0.00206676" />
+	<param name="odom_topic" value="/odom" />
+	<!-- <param name="odom_topic" value="/tinypower/odom" /> -->
+	<param name="imu_topic" value="/imu/data" />
+
+
+</launch>
+
+

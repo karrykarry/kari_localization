@@ -5,7 +5,6 @@
 //
 #include <stdio.h>
 #include <iostream>
-#include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
@@ -50,17 +49,13 @@ class Complement{
 		sensor_msgs::Imu imu_msg;
 		std_msgs::Int32 number;
 
-		tfScalar yaw_first;
-
+		int num;
 		bool flag;
 		bool yaw_first_flag;
 		bool w_first_flag;
-
-		double w_first;
-		double yaw_before;
-		int num;
-		float z_height;
-
+		bool ekf_first_flag;
+		bool ndt_first_flag;
+		double z_height;
 
 		string HEADER_FRAME;
 		string CHILD_FRAME;
@@ -70,7 +65,7 @@ class Complement{
 		string EKF_TOPIC;
 		string PUB_TOPIC;
 		int type;
-
+		double drift_dyaw;
 
 	public:
 		Complement(ros::NodeHandle& n);
@@ -90,11 +85,7 @@ class Complement{
 			
 			while(ros::ok()){
 
-				// cout <<flag<<endl; 
-
-
-				if(flag)prepare();
-				else start();
+				if(!flag)start();
 
 				ros::spinOnce();
 				loop_rate.sleep();
@@ -108,10 +99,8 @@ class Complement{
 
 
 Complement::Complement(ros::NodeHandle &n) :
-	r(100),
-	flag(true),
-	yaw_first_flag(true),
-	w_first_flag(true)
+	r(100),num(0),flag(true),yaw_first_flag(true),w_first_flag(true),
+	ndt_first_flag(true),ekf_first_flag(true),z_height(0.0)
 {
 
 	n.param("header_frame" ,HEADER_FRAME, {0});
@@ -125,6 +114,7 @@ Complement::Complement(ros::NodeHandle &n) :
 	n.param("ekf_topic" ,EKF_TOPIC, {0});
 	n.param("publish_topic" ,PUB_TOPIC, {0});
 	n.param("estimate_result" ,type, 0);//choice
+	n.param("dyaw/drift",drift_dyaw,{0});
 
 
 
@@ -133,8 +123,6 @@ Complement::Complement(ros::NodeHandle &n) :
 		lcl[i].y =   init_pose.y;
 		lcl[i].yaw = init_pose.theta*M_PI/180.0;
 	}
-	
-	for(size_t i=0;i<N;i++) lcl[i].start();
 
 	odm_sub = n.subscribe(ODOM_TOPIC, 100, &Complement::odomCallback, this);
 	amu_sub = n.subscribe(IMU_TOPIC, 100, &Complement::imuCallback, this);
@@ -163,8 +151,7 @@ Complement::Complement(ros::NodeHandle &n) :
 
 	}
 
-
-	num = 0;
+	prepare();
 
 }
 
@@ -177,67 +164,54 @@ Complement::heightCallback(const std_msgs::Float64::Ptr msg){
 void 
 Complement::odomCallback(const nav_msgs::Odometry::Ptr msg){
 
-	fflush(stdout);
-	
-    lcl[0].v = msg->twist.twist.linear.x;
-	lcl[1].v = msg->twist.twist.linear.x;
-	
-    if(w_first_flag){	
-		w_first = msg->twist.twist.angular.z;
-
+	if(w_first_flag){	
+		lcl[0].start();
         w_first_flag = false;
     }
 	
-    lcl[0].w = msg->twist.twist.angular.z - w_first;
-
+    lcl[0].v = msg->twist.twist.linear.x;
+	lcl[1].v = msg->twist.twist.linear.x;
+    lcl[0].w = msg->twist.twist.angular.z;
+	
 
     lcl[0].altering();
-	// lcl[0].altering4(); //pitchが変だから
-    flag=false;
 }
 
 
 void 
 Complement::imuCallback(const sensor_msgs::Imu::Ptr imu){
-	
-	fflush(stdout);
 
-    tf::Quaternion orientation;
-    tf::quaternionMsgToTF(imu->orientation, orientation);
-    tfScalar yaw, pitch, roll;
-    tf::Matrix3x3(orientation).getEulerYPR(yaw, pitch, roll);
-
-    if(yaw_first_flag){
-        yaw_first = yaw;
+	if(yaw_first_flag){	
+		lcl[1].start();
         yaw_first_flag = false;
     }
-	
 
-    lcl[0].pitch = pitch;
-	lcl[1].pitch = pitch;
-
-    lcl[1].yaw = yaw - yaw_first;
-    lcl[1].roll = roll;
-    
-    lcl[1].d_yaw = lcl[1].yaw - yaw_before;
-    yaw_before = lcl[1].yaw;
-
-    lcl[1].altering3();
+	lcl[1].w = imu->angular_velocity.z;
+	lcl[1].w -= drift_dyaw;	
+	lcl[1].altering();
 
 	//回転
-    if(lcl[1].d_yaw < -0.0015 || 0.0015 < lcl[1].d_yaw){ //小さいほうがndtが吹っ飛ぶ前に補正できる//1[deg] = 0.017[rad]
-    // num = 10;
-    num = 0;
+    if(lcl[1].w < -0.20 || 0.20 < lcl[1].w){ //小さいほうがndtが吹っ飛ぶ前に補正できる//1[deg] = 0.017[rad]
+		cout<<"\r回転なう"<<flush;
+    num = 10;
+    // num = 0;
     }
-    else num = 0;
+    else {
+		cout<<"\r-------"<<flush;
+		num = 0;
+	}
+    flag=false;
 }
 
 
 void 
 Complement::ndtCallback(const nav_msgs::Odometry msg){
 	
-	fflush(stdout);
-    
+	if(ndt_first_flag){	
+		lcl[2].start();
+        ndt_first_flag = false;
+    }
+
     lcl[2].x = msg.pose.pose.position.x;
 	lcl[2].y = msg.pose.pose.position.y;
 	lcl[2].yaw = msg.pose.pose.orientation.z;
@@ -248,8 +222,11 @@ Complement::ndtCallback(const nav_msgs::Odometry msg){
 void 
 Complement::ekfCallback(const nav_msgs::Odometry msg){
 
-	fflush(stdout);
-    
+	if(ekf_first_flag){	
+		lcl[3].start();
+        ekf_first_flag = false;
+    }
+
     lcl[3].x = msg.pose.pose.position.x;
 	lcl[3].y = msg.pose.pose.position.y;
 	lcl[3].yaw = msg.pose.pose.orientation.z;
@@ -273,30 +250,20 @@ Complement::start(){
 
 // 0:odom 1:imu 2:ndt 3:ekf
 
-	double u;
-
-
 	lcl_.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
 	lcl_.pose.pose.position.x = lcl[type].x;
 	lcl_.pose.pose.position.y = lcl[type].y;
-	lcl_.pose.pose.position.z = z_height;
-	// lcl_.pose.pose.position.z = lcl[1].z;
-	// lcl_.pose.pose.orientation.x = lcl[1].roll;
-	// lcl_.pose.pose.orientation.y = lcl[1].pitch;
+	lcl_.pose.pose.position.z = 0.0;
 	lcl_.pose.pose.orientation.z = lcl[type].yaw;
 
 	lcl_pub.publish(lcl_);
 
-	u = (double)lcl[type].yaw;
-
-
 	lcl_vis.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
-	lcl_vis.pose.pose.position.x = lcl[1].x;
-	lcl_vis.pose.pose.position.y = lcl[1].y;
+	lcl_vis.pose.pose.position.x = lcl[type].x;
+	lcl_vis.pose.pose.position.y = lcl[type].y;
 	lcl_vis.pose.pose.position.z = z_height;	
-	// lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw((double)lcl[type].z) ;
-	// lcl_vis.pose.pose.orientation = tf::createQuaternionMsgFromYaw(lcl[type].yaw) ;
-	lcl_vis.pose.pose.orientation.z = lcl[1].yaw;
+	lcl_vis.pose.pose.orientation.z = sin(lcl[type].yaw*0.5);
+	lcl_vis.pose.pose.orientation.w = cos(lcl[type].yaw*0.5);
 
 	lcl_vis_pub.publish(lcl_vis);
 

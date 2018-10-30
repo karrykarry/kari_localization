@@ -74,6 +74,7 @@ float get_min(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point){
 	float ans;
 	int count;
 	count =0;
+	ans =0;
 
     size_t velodyne_size = input_point->points.size();
     for (size_t i = 0; i < velodyne_size; ++i) {
@@ -95,15 +96,19 @@ float get_min(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point){
 			else min[x][y] = MIN(min[x][y], scan.z);
         }
     }
-	
+
 	for (int i=0;i<grid_dim_;i++){
 		for (int j=0;j<grid_dim_;j++){
-			if(init[i][j]){
-				ans = (ans * count + min[i][j])/(count+1);
-				count++;
+			if (!count) {
+				if(init[i][j]){
+					ans = min[i][j];
+					count++;
+				} 
 			}
+			else ans = MIN(min[i][j], ans);	
 		}
 	}
+	
 	return ans;
 }
 

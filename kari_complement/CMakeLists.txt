@@ -184,6 +184,10 @@ target_link_libraries(imu_complement_add_height
   ${catkin_LIBRARIES}
 )
 
+add_executable(imu_odom src/imu_odom.cpp)
+target_link_libraries(imu_odom
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
