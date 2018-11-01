@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<launch>
+	<rosparam file="$(find kari_localization)/yaml/maps.yaml" />
+	<node pkg="kari_localization" type="map_alignment" name="alignment" />
+        <param name="laser_voxel_size" value="0.3" />
+        <param name="map_voxel_size" value="0.3" />
+        <param name="map_limit" value="21.0" />
+        <param name="laser_limit" value="20.0" />
+        <param name="init_x" value="0.0" />
+        <param name="init_y" value="0.0" />
+        <param name="init_z" value="0.0" />
+        <param name="init_yaw" value="0.0" />
+
+
+		<param name="lidar_topic" value="/velodyne_obstacles" />
+		<param name="odom_topic" value="/lcl_ekf" />
+		<param name="ndt_topic" value="/sq_ndt_data" />
+
+		 <node pkg="pcl_ros" type="pcd_to_pointcloud" name="pcd_to_pointcloud" args="$(find kari_localization)/sample_pcd/d_kan_indoor.pcd _frame_id:=/map" />
+
+	<node pkg="kari_localization" type="get_height" name="get_height" output="screen"/>
+
+	<node name="imu_complement" pkg="kari_complement" type="imu_complement_add_height" output= "screen" />
+	
+	<param name="header_frame" value="/map" />	
+	<param name="child_frame" value="/matching_base_link" />
+	<param name="init_x" value="0.0" />
+	<param name="init_y" value="0.0" />
+	<param name="init_yaw" value="0.0" />
+	<param name="odom_topic" value="/odom" />
+	<!-- <param name="odom_topic" value="/tinypower/odom" /> -->
+	<param name="imu_topic" value="/imu/data" />
+	<param name="ndt_topic" value="/sq_ndt_data" />
+	<param name="ekf_topic" value="/ekf_NDT" />
+	<param name="publish_topic" value="/lcl_ekf" />
+
+	<!-- 0:odom 1:imu 2:ndt 3:ekf -->
+	<param name="estimate_result" value="3" />
+	
+	<node pkg="ekf" type="sq_NDT_odo" name="sq_NDT_odo" output="screen">
+        <rosparam file="$(find params)/run_test/sq_ekf_sigs.yaml" />
+        <rosparam file="$(find params)/run_test/init_pose.yaml" />
+		<remap from="/imu/data" to="/imu/data/calibrated" />
+		<!-- <remap from="/odom" to="/tinypower/odom" /> -->
+	</node>
+
+</launch>
+
+

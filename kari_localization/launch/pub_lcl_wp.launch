@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- <rosparam file="$(find params)/run_test/waypoint_list.yaml"/> -->
+	<rosparam file="$(find waypoint_manager)/yaml/waypoint_list.yaml"/>
+	<node name="wp_now" pkg="kari_localization" type="pub_lcl_now" output="screen"/>
+	<remap from = "/lcl_ekf" to = "/ekf_NDT"/>
+</launch>
+

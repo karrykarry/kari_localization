@@ -117,10 +117,10 @@ Align::Align(ros::NodeHandle& n) :
     n.getParam("map_voxel_size",map_size);
     n.getParam("map_limit",map_limit);
     n.getParam("laser_limit",laser_limit);
-    // n.getParam("init_x",x_now);
-    // n.getParam("init_y",y_now);
-    // n.getParam("init_z",z_now);
-    // n.getParam("init_yaw",yaw_now);
+    n.getParam("init_x",x_now);
+    n.getParam("init_y",y_now);
+    n.getParam("init_z",z_now);
+    n.getParam("init_yaw",yaw_now);
     n.getParam("lidar_topic",LIDAR_TOPIC);
     n.getParam("odom_topic",ODOM_TOPIC);
     n.getParam("ndt_topic",NDT_TOPIC);
@@ -155,7 +155,6 @@ Align::odomCallback(const nav_msgs::Odometry::Ptr msg){
 	y_now = msg->pose.pose.position.y;
 
 	yaw_now = msg->pose.pose.orientation.z;
-	flag = true;
 }
 
 
@@ -171,6 +170,7 @@ Align::z_lcl_Callback(std_msgs::Float64 number){
 void 
 Align::velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input){
 
+	flag = true;
 	float d = 0;
 
 	pcl::fromROSMsg(*input,*input_cloud);

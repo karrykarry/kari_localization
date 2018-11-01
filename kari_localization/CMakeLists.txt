@@ -267,6 +267,10 @@ target_link_libraries(get_height
     ${PCL_LIBRARIES}
 )
 
+add_executable(pub_lcl_now src/pub_lcl_now.cpp)
+target_link_libraries(pub_lcl_now
+	${catkin_LIBRARIES}
+)
 
 
 
