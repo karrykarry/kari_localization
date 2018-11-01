@@ -3,6 +3,7 @@ Localization::Localization(){
 	x = y = pitch = yaw = v = w = 0.0;
     z = 0.0;
 	time = 0.0;
+	flag = false;
 }
 
 Localization::~Localization(){

@@ -32,6 +32,7 @@ class Complement{
 		ros::Subscriber ndt_sub;
 		ros::Subscriber ekf_sub;
 		ros::Subscriber height_sub;
+		ros::Subscriber initpose_sub;
 
 		ros::Publisher lcl_pub;
 		ros::Publisher lcl_vis_pub;
@@ -51,10 +52,6 @@ class Complement{
 
 		int num;
 		bool flag;
-		bool yaw_first_flag;
-		bool w_first_flag;
-		bool ekf_first_flag;
-		bool ndt_first_flag;
 		double z_height;
 
 		string HEADER_FRAME;
@@ -74,9 +71,10 @@ class Complement{
 		void ndtCallback(const nav_msgs::Odometry msg);
 		void ekfCallback(const nav_msgs::Odometry msg);
 		void heightCallback(const std_msgs::Float64::Ptr msg);
+		void initposeCallback(const geometry_msgs::PoseStampedConstPtr& msg);
 
 		void prepare();
-		void start();
+		int start();
 
 		bool spin()
 		{
@@ -85,7 +83,7 @@ class Complement{
 			
 			while(ros::ok()){
 
-				if(!flag)start();
+				if(flag) start();
 
 				ros::spinOnce();
 				loop_rate.sleep();
@@ -99,29 +97,26 @@ class Complement{
 
 
 Complement::Complement(ros::NodeHandle &n) :
-	r(100),num(0),flag(true),yaw_first_flag(true),w_first_flag(true),
-	ndt_first_flag(true),ekf_first_flag(true),z_height(0.0)
+	r(100),num(0),flag(false),z_height(0.0)
 {
 
-	n.param("header_frame" ,HEADER_FRAME, {0});
-	n.param("child_frame" ,CHILD_FRAME, {0});
-	n.param("init_x" ,init_pose.x, 0.0);
-	n.param("init_y" ,init_pose.y, 0.0);
-	n.param("init_yaw" ,init_pose.theta, 0.0);//degree
-	n.param("odom_topic" ,ODOM_TOPIC, {0});
-	n.param("imu_topic" ,IMU_TOPIC, {0});
-	n.param("ndt_topic" ,NDT_TOPIC, {0});
-	n.param("ekf_topic" ,EKF_TOPIC, {0});
-	n.param("publish_topic" ,PUB_TOPIC, {0});
-	n.param("estimate_result" ,type, 0);//choice
-	n.param("dyaw/drift",drift_dyaw,{0});
-
-
+	n.getParam("header_frame" ,HEADER_FRAME);
+	n.getParam("child_frame" ,CHILD_FRAME);
+	n.getParam("init_x" ,init_pose.x);
+	n.getParam("init_y" ,init_pose.y);
+	n.getParam("init_yaw" ,init_pose.theta);//rad
+	n.getParam("odom_topic" ,ODOM_TOPIC);
+	n.getParam("imu_topic" ,IMU_TOPIC);
+	n.getParam("ndt_topic" ,NDT_TOPIC);
+	n.getParam("ekf_topic" ,EKF_TOPIC);
+	n.getParam("publish_topic" ,PUB_TOPIC);
+	n.getParam("estimate_result" ,type);//choice
+	n.getParam("dyaw/drift",drift_dyaw);
 
 	for(size_t i=0;i<N;i++){
 		lcl[i].x =   init_pose.x;
 		lcl[i].y =   init_pose.y;
-		lcl[i].yaw = init_pose.theta*M_PI/180.0;
+		lcl[i].yaw = init_pose.theta;
 	}
 
 	odm_sub = n.subscribe(ODOM_TOPIC, 100, &Complement::odomCallback, this);
@@ -129,6 +124,7 @@ Complement::Complement(ros::NodeHandle &n) :
 	ndt_sub = n.subscribe(NDT_TOPIC, 100, &Complement::ndtCallback, this);
     ekf_sub = n.subscribe(EKF_TOPIC, 100, &Complement::ekfCallback, this);
 	height_sub = n.subscribe("/height", 100, &Complement::heightCallback, this);
+	initpose_sub = n.subscribe("/move_base_simple/goal", 100, &Complement::initposeCallback, this);
 
 	lcl_pub = n.advertise<nav_msgs::Odometry>(PUB_TOPIC, 10);
 	lcl_vis_pub = n.advertise<nav_msgs::Odometry>("/lcl_vis", 10);
@@ -151,7 +147,6 @@ Complement::Complement(ros::NodeHandle &n) :
 
 	}
 
-	prepare();
 
 }
 
@@ -164,9 +159,9 @@ Complement::heightCallback(const std_msgs::Float64::Ptr msg){
 void 
 Complement::odomCallback(const nav_msgs::Odometry::Ptr msg){
 
-	if(w_first_flag){	
+	if(!lcl[0].flag){	
 		lcl[0].start();
-        w_first_flag = false;
+        lcl[0].flag = true;
     }
 	
     lcl[0].v = msg->twist.twist.linear.x;
@@ -181,9 +176,9 @@ Complement::odomCallback(const nav_msgs::Odometry::Ptr msg){
 void 
 Complement::imuCallback(const sensor_msgs::Imu::Ptr imu){
 
-	if(yaw_first_flag){	
+	if(!lcl[1].flag){	
 		lcl[1].start();
-        yaw_first_flag = false;
+    	lcl[1].flag = true;
     }
 
 	lcl[1].w = imu->angular_velocity.z;
@@ -196,20 +191,20 @@ Complement::imuCallback(const sensor_msgs::Imu::Ptr imu){
     num = 10;
     // num = 0;
     }
+
     else {
 		cout<<"\r-------"<<flush;
 		num = 0;
 	}
-    flag=false;
 }
 
 
 void 
 Complement::ndtCallback(const nav_msgs::Odometry msg){
 	
-	if(ndt_first_flag){	
+	if(!lcl[2].flag){	
 		lcl[2].start();
-        ndt_first_flag = false;
+        lcl[2].flag = true;
     }
 
     lcl[2].x = msg.pose.pose.position.x;
@@ -222,9 +217,9 @@ Complement::ndtCallback(const nav_msgs::Odometry msg){
 void 
 Complement::ekfCallback(const nav_msgs::Odometry msg){
 
-	if(ekf_first_flag){	
+	if(!lcl[3].flag){	
 		lcl[3].start();
-        ekf_first_flag = false;
+		lcl[3].flag = true;
     }
 
     lcl[3].x = msg.pose.pose.position.x;
@@ -233,28 +228,34 @@ Complement::ekfCallback(const nav_msgs::Odometry msg){
 	
 }
 
-void
-Complement::prepare(){
+void 
+Complement::initposeCallback(const geometry_msgs::PoseStampedConstPtr& msg){
+	
+    double qr,qp,qy;
+    tf::Quaternion quat(msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z, msg->pose.orientation.w);
+    tf::Matrix3x3(quat).getRPY(qr, qp, qy);   
 
-	transform.setOrigin( tf::Vector3(init_pose.x, init_pose.y, 0.0) );
-	tf::Quaternion q;
-	q.setRPY(0, 0, init_pose.theta*M_PI/180.0);
+	lcl[type].x = msg->pose.position.x;
+	lcl[type].y = msg->pose.position.y;
+	lcl[type].yaw = qy;
 
-	transform.setRotation(q);
-	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), HEADER_FRAME, CHILD_FRAME));
+	flag = true;
+
 }
 
 
-void
+int 
 Complement::start(){
-
+	
 // 0:odom 1:imu 2:ndt 3:ekf
+
 
 	lcl_.header.stamp = ros::Time::now(); //timestampのメッセージを送ろうとしている
 	lcl_.pose.pose.position.x = lcl[type].x;
 	lcl_.pose.pose.position.y = lcl[type].y;
 	lcl_.pose.pose.position.z = 0.0;
 	lcl_.pose.pose.orientation.z = lcl[type].yaw;
+	// lcl_.pose.pose.orientation.z = -1.52;
 
 	lcl_pub.publish(lcl_);
 

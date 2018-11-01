@@ -12,7 +12,7 @@ public:
     double time;
 
     double dt;
-
+	bool flag;
 
 	Stopwatch sw;
 	
