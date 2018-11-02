@@ -1,8 +1,12 @@
-//
-//map_alignment.launch をつかってパラメータ調整する
-//
-//
-
+/* map_alignmennt_add_height.cpp:mapの地面に対して合わせてmap-matching
+ *
+ * 2018.11.02
+ *
+ * author : R.Kusakari
+ *
+ * subscribe lcl_ekf
+ *
+*/ 
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 
@@ -70,21 +74,16 @@ class Align{
 
 		float x_now,y_now,yaw_now;
 		float z_now;
-
-		float map_limit,laser_limit;//map・laserの距離
-		string map_file;
-
-		float laser_size,map_size;//voxel
-		bool flag;//lidar
 		double l_roll, l_pitch, l_yaw;//角度etc
 
-
+		bool flag;//lidar
+		float laser_size,map_size;//voxel
+		float map_limit,laser_limit;//map・laserの距離
 		string LIDAR_TOPIC;
-		string ODOM_TOPIC;
-		string NDT_TOPIC;
+		string map_file;
 
 	public:
-		Align(ros::NodeHandle& n);
+		Align(ros::NodeHandle n,ros::NodeHandle priv_nh);
 		void map_read();//mapの点群を扱う
 		void maptolidar();//位置合わせを行う
 
@@ -109,40 +108,29 @@ class Align{
 
 };
 
-Align::Align(ros::NodeHandle& n) :
+Align::Align(ros::NodeHandle n,ros::NodeHandle priv_nh) :
 	r(10),flag(false)
 {
 
-    n.getParam("laser_voxel_size",laser_size);
-    n.getParam("map_voxel_size",map_size);
-    n.getParam("map_limit",map_limit);
-    n.getParam("laser_limit",laser_limit);
-    // n.getParam("init_x",x_now);
-    // n.getParam("init_y",y_now);
-    // n.getParam("init_z",z_now);
-    // n.getParam("init_yaw",yaw_now);
-    n.getParam("lidar_topic",LIDAR_TOPIC);
-    n.getParam("odom_topic",ODOM_TOPIC);
-    n.getParam("ndt_topic",NDT_TOPIC);
-    // n.getParam("ndt_topic",NDT_TOPIC);
-	n.getParam("map/d_kan_around",map_file);
-	
-	
+    priv_nh.getParam("laser_voxel_size",laser_size);
+    priv_nh.getParam("map_voxel_size",map_size);
+    priv_nh.getParam("map_limit",map_limit);
+    priv_nh.getParam("laser_limit",laser_limit);
+    priv_nh.getParam("lidar_topic",LIDAR_TOPIC);
+	n.getParam("map_file",map_file);
+		
 	velo_sub = n.subscribe(LIDAR_TOPIC, 1000, &Align::velodyneCallback, this);
-	odom_sub = n.subscribe(ODOM_TOPIC, 1000, &Align::odomCallback, this);
+	odom_sub = n.subscribe("/lcl_ekf", 1000, &Align::odomCallback, this);
 	z_sub = n.subscribe("/height", 1000, &Align::z_lcl_Callback, this);
 
-	ndt_pub = n.advertise<nav_msgs::Odometry>(NDT_TOPIC, 1000);
+	ndt_pub = n.advertise<nav_msgs::Odometry>("/sq_ndt_data", 1000);
 	vis_voxel_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_result", 1000);
 	vis_map_pub = n.advertise<sensor_msgs::PointCloud2>("/vis_map", 1000);
-
-
 
 	// cout << "-------PARAMETARS----------" << endl;
 	cout << "map_name：" << map_file << endl;
 
 	l_roll = l_pitch = l_yaw = 0;
-
 }
 
 //現在地を知る
@@ -230,7 +218,6 @@ Align::local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
         d = distance(temp_point.x , temp_point.y);
         
 		if((map_limit * (-1) + x_now <= temp_point.x && temp_point.x  <= map_limit + x_now) && (map_limit *(-1) + y_now <= temp_point.y && temp_point.y <= map_limit + y_now) && (-0.5 + z_now  < temp_point.z && temp_point.z <= 5.0 + z_now )){//つくば
-		// if((map_limit * (-1) + x_now <= temp_point.x && temp_point.x  <= map_limit + x_now) && (map_limit *(-1) + y_now <= temp_point.y && temp_point.y <= map_limit + y_now) ){//つくば
 	 
 			local_map_cloud->points.push_back(temp_point);
 		}
@@ -278,18 +265,14 @@ Align::maptolidar()
 }
 
 
-
-
-
-
 int main(int argc, char** argv){
 	ros::init(argc,argv,"map_alignment");
 	ros::NodeHandle n;
-
+	ros::NodeHandle priv_nh("~");
 
 	cout<<"-----alignment start-------"<<endl;
 
-	Align align(n);
+	Align align(n,priv_nh);
 
 	align.spin();
 

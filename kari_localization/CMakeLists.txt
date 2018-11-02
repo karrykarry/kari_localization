@@ -273,6 +273,12 @@ target_link_libraries(pub_lcl_now
 )
 
 
+add_executable(pcd_loader_ src/pcd_loader_.cpp)
+target_link_libraries(pcd_loader_ 	
+	${PCL_LIBRARIES}
+	${catkin_LIBRARIES}
+)
+
 
 #############
 ## Install ##

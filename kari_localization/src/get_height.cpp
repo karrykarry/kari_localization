@@ -1,3 +1,6 @@
+/*自分付近の最下点を算出
+ *
+ */
 #include <ros/ros.h>
 #include <pcl/point_cloud.h>
 #include <pcl/kdtree/kdtree_flann.h>
@@ -125,7 +128,7 @@ int main (int argc, char** argv)
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_IN(new pcl::PointCloud<pcl::PointXYZ>);
     
 	string map_file;
-	n.getParam("map/d_kan_around",map_file);
+	n.getParam("map_file",map_file);
 	map_reader(0.2,map_file,cloud_IN);
     
 	std_msgs::Float64 num;

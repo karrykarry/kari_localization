@@ -1,7 +1,7 @@
+//rviz の 2D Nav Goalで初期位置設定
 //
 //estimate_result で使いたい値を選択
 //
-//gyro:imu
 //
 #include <stdio.h>
 #include <iostream>
@@ -56,16 +56,11 @@ class Complement{
 
 		string HEADER_FRAME;
 		string CHILD_FRAME;
-		string ODOM_TOPIC;
-		string IMU_TOPIC;
-		string NDT_TOPIC;
-		string EKF_TOPIC;
-		string PUB_TOPIC;
 		int type;
 		double drift_dyaw;
 
 	public:
-		Complement(ros::NodeHandle& n);
+		Complement(ros::NodeHandle n,ros::NodeHandle priv_nh);
 		void odomCallback(const nav_msgs::Odometry::Ptr msg);
 		void imuCallback(const sensor_msgs::Imu::Ptr msg);
 		void ndtCallback(const nav_msgs::Odometry msg);
@@ -96,22 +91,17 @@ class Complement{
 
 
 
-Complement::Complement(ros::NodeHandle &n) :
+Complement::Complement(ros::NodeHandle n,ros::NodeHandle priv_nh) :
 	r(100),num(0),flag(false),z_height(0.0)
 {
 
-	n.getParam("header_frame" ,HEADER_FRAME);
-	n.getParam("child_frame" ,CHILD_FRAME);
-	n.getParam("init_x" ,init_pose.x);
-	n.getParam("init_y" ,init_pose.y);
-	n.getParam("init_yaw" ,init_pose.theta);//rad
-	n.getParam("odom_topic" ,ODOM_TOPIC);
-	n.getParam("imu_topic" ,IMU_TOPIC);
-	n.getParam("ndt_topic" ,NDT_TOPIC);
-	n.getParam("ekf_topic" ,EKF_TOPIC);
-	n.getParam("publish_topic" ,PUB_TOPIC);
-	n.getParam("estimate_result" ,type);//choice
-	n.getParam("dyaw/drift",drift_dyaw);
+	priv_nh.getParam("header_frame" ,HEADER_FRAME);
+	priv_nh.getParam("child_frame" ,CHILD_FRAME);
+	priv_nh.getParam("init_x" ,init_pose.x);
+	priv_nh.getParam("init_y" ,init_pose.y);
+	priv_nh.getParam("init_yaw" ,init_pose.theta);//rad
+	priv_nh.getParam("estimate_result" ,type);//choice
+	priv_nh.getParam("dyaw/drift",drift_dyaw);
 
 	for(size_t i=0;i<N;i++){
 		lcl[i].x =   init_pose.x;
@@ -119,14 +109,14 @@ Complement::Complement(ros::NodeHandle &n) :
 		lcl[i].yaw = init_pose.theta;
 	}
 
-	odm_sub = n.subscribe(ODOM_TOPIC, 100, &Complement::odomCallback, this);
-	amu_sub = n.subscribe(IMU_TOPIC, 100, &Complement::imuCallback, this);
-	ndt_sub = n.subscribe(NDT_TOPIC, 100, &Complement::ndtCallback, this);
-    ekf_sub = n.subscribe(EKF_TOPIC, 100, &Complement::ekfCallback, this);
+	odm_sub = n.subscribe("/odom", 100, &Complement::odomCallback, this);
+	amu_sub = n.subscribe("/imu/data", 100, &Complement::imuCallback, this);
+	ndt_sub = n.subscribe("/sq_ndt_data", 100, &Complement::ndtCallback, this);
+    ekf_sub = n.subscribe("/ekf_NDT", 100, &Complement::ekfCallback, this);
 	height_sub = n.subscribe("/height", 100, &Complement::heightCallback, this);
 	initpose_sub = n.subscribe("/move_base_simple/goal", 100, &Complement::initposeCallback, this);
 
-	lcl_pub = n.advertise<nav_msgs::Odometry>(PUB_TOPIC, 10);
+	lcl_pub = n.advertise<nav_msgs::Odometry>("lcl_ekf", 10);
 	lcl_vis_pub = n.advertise<nav_msgs::Odometry>("/lcl_vis", 10);
 	lcl_hantei_pub = n.advertise<std_msgs::Int32>("/hantei", 10);
 
@@ -186,7 +176,7 @@ Complement::imuCallback(const sensor_msgs::Imu::Ptr imu){
 	lcl[1].altering();
 
 	//回転
-    if(lcl[1].w < -0.20 || 0.20 < lcl[1].w){ //小さいほうがndtが吹っ飛ぶ前に補正できる//1[deg] = 0.017[rad]
+    if(lcl[1].w < -0.20 || 0.20 < lcl[1].w){
 		cout<<"\r回転なう"<<flush;
     num = 10;
     // num = 0;
@@ -255,7 +245,6 @@ Complement::start(){
 	lcl_.pose.pose.position.y = lcl[type].y;
 	lcl_.pose.pose.position.z = 0.0;
 	lcl_.pose.pose.orientation.z = lcl[type].yaw;
-	// lcl_.pose.pose.orientation.z = -1.52;
 
 	lcl_pub.publish(lcl_);
 
@@ -287,9 +276,10 @@ Complement::start(){
 int main (int argc, char** argv){
 	ros::init(argc,argv,"imu_complement");
 	ros::NodeHandle n;
+	ros::NodeHandle priv_nh("~");
 
 	cout<<"------complement start---------"<<endl;
-	Complement complement(n);
+	Complement complement(n,priv_nh);
 	complement.spin();
 
 	return 0;
