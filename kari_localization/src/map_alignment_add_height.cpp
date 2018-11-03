@@ -175,7 +175,7 @@ Align::velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input){
         d = distance(temp_point.x , temp_point.y);
         
         // if(-0.3 + z_now < temp_point.z && temp_point.z <4.0 + z_now){//つくば
-		 if((1.5 <= d &&d <= laser_limit)&&(-0.5 + z_now < temp_point.z && temp_point.z <5.0 + z_now)) {//つくば
+		 if((1.5 <= d &&d <= laser_limit)) {//つくば
         // if(1.5 <= d &&d <= laser_limit){//つくば
 
 			limit_input_cloud->points.push_back(temp_point);
@@ -216,8 +216,9 @@ Align::local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
 
         
         d = distance(temp_point.x , temp_point.y);
+		if((map_limit * (-1) + x_now <= temp_point.x && temp_point.x  <= map_limit + x_now) && (map_limit *(-1) + y_now <= temp_point.y && temp_point.y <= map_limit + y_now)){//つくば
         
-		if((map_limit * (-1) + x_now <= temp_point.x && temp_point.x  <= map_limit + x_now) && (map_limit *(-1) + y_now <= temp_point.y && temp_point.y <= map_limit + y_now) && (-0.5 + z_now  < temp_point.z && temp_point.z <= 5.0 + z_now )){//つくば
+		// if((map_limit * (-1) + x_now <= temp_point.x && temp_point.x  <= map_limit + x_now) && (map_limit *(-1) + y_now <= temp_point.y && temp_point.y <= map_limit + y_now) && (-0.5 + z_now  < temp_point.z && temp_point.z <= 5.0 + z_now )){//つくば
 	 
 			local_map_cloud->points.push_back(temp_point);
 		}

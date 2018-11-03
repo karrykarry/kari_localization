@@ -1,14 +1,16 @@
 <?xml version="1.0"?>
 <launch>
-	<rosparam file="$(find maps)/yaml/d_kan_indoor.yaml" />
+	<!-- <rosparam file="$(find maps)/yaml/d_kan_indoor.yaml" /> -->
 	<!-- <rosparam file="$(find maps)/yaml/d_kan_around.yaml" /> -->
 	<!-- <rosparam file="$(find maps)/yaml/tkb_2018_kakunin.yaml" /> -->
+	<rosparam file="$(find maps)/yaml/tkb_2018_kakunin_L.yaml" />
+	<!-- <rosparam file="$(find maps)/yaml/ikuta_all.yaml" /> -->
 
 	<node pkg="kari_localization" type="map_alignment_add_height" name="alignment"  >
 		<param name="laser_voxel_size" value="0.3" />
 		<param name="map_voxel_size" value="0.3" />
-		<param name="map_limit" value="20.0" />
-		<param name="laser_limit" value="20.0" />
+		<param name="map_limit" value="50.0" />
+		<param name="laser_limit" value="50.0" />
 		<!-- <param name="lidar_topic" value="/cloud/lcl" /> -->
 		<param name="lidar_topic" value="/velodyne_obstacles" />
 	</node>

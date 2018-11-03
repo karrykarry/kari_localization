@@ -173,6 +173,7 @@ Complement::imuCallback(const sensor_msgs::Imu::Ptr imu){
 
 	lcl[1].w = imu->angular_velocity.z;
 	lcl[1].w -= drift_dyaw;	
+	// lcl[1].w = lcl[1].w * (-1);	
 	lcl[1].altering();
 
 	//回転

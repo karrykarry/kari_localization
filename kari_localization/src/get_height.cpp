@@ -24,8 +24,8 @@
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
-int grid_dim_ = 20;
-double m_per_cell_ = 0.1;
+int grid_dim_ = 8;
+double m_per_cell_ = 0.5;
 
 using namespace std;	
 
@@ -71,7 +71,7 @@ float get_min(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point){
     float min[grid_dim_][grid_dim_];
     bool init[grid_dim_][grid_dim_];
 	
-	fill(min[0],min[grid_dim_],0);
+	fill(min[0],min[grid_dim_],100);
 	fill(init[0],init[grid_dim_],0);
 
 	float ans;
@@ -100,15 +100,28 @@ float get_min(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point){
         }
     }
 
+	// for (int i=0;i<grid_dim_;i++){
+	// 	for (int j=0;j<grid_dim_;j++){
+	// 		if (!count) {
+	// 			if(init[i][j]){
+	// 				ans = min[i][j];
+	// 				count++;
+	// 			} 
+	// 		}
+	// 		else ans = MIN(min[i][j], ans);	
+	// 	}
+	// }
+	//
+	//
+	// tkb用
+	//minimumの近傍を平均する
+	//
 	for (int i=0;i<grid_dim_;i++){
 		for (int j=0;j<grid_dim_;j++){
-			if (!count) {
-				if(init[i][j]){
-					ans = min[i][j];
-					count++;
-				} 
+			if(init[i][j]){
+				ans = (ans * count + min[i][j])/(count+1);
+				count++;
 			}
-			else ans = MIN(min[i][j], ans);	
 		}
 	}
 	
@@ -130,7 +143,7 @@ int main (int argc, char** argv)
 	string map_file;
 	n.getParam("map_file",map_file);
 	map_reader(0.2,map_file,cloud_IN);
-    
+   
 	std_msgs::Float64 num;
 	
 	while(ros::ok()){
