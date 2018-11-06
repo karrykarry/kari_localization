@@ -80,7 +80,7 @@ class Align{
 		double l_roll, l_pitch, l_yaw;//角度etc
 
 		bool flag;//lidar
-		bool tkb_flag;//lidar
+		int map_mode;//lidar
 		float laser_size,map_size;//voxel
 		float map_limit,laser_limit;//map・laserの距離
 		string LIDAR_TOPIC;
@@ -125,7 +125,7 @@ Align::Align(ros::NodeHandle n,ros::NodeHandle priv_nh) :
     priv_nh.getParam("lidar_topic",LIDAR_TOPIC);
 	n.getParam("map_file",map_file);
 	n.getParam("map_file2",map_file2);
-	n.getParam("tkb_flag",tkb_flag);
+	n.getParam("map_mode",map_mode);
 		
 	velo_sub = n.subscribe(LIDAR_TOPIC, 1000, &Align::velodyneCallback, this);
 	odom_sub = n.subscribe("/lcl_ekf", 1000, &Align::odomCallback, this);
@@ -167,7 +167,30 @@ bool flag_ = true;
 void 
 Align::wpCallback(const std_msgs::Int32ConstPtr input){
 
-	if(!tkb_flag){
+	if(map_mode == 1){
+	
+	//d_kan_indoor
+	if(input->data == 3 || input->data == 9 ){
+		if(flag_){
+		use_map_cloud = filtered_map_cloud2;
+		flag_ = false;
+		}
+	}
+
+	//d_kan_around
+	else if(input->data == 7 || input->data == 13){
+		if(flag_){
+		use_map_cloud = filtered_map_cloud;
+		flag_ = false;
+		}
+	}
+
+	else flag_ = true;
+
+	}
+
+
+	if(map_mode == 2){
 	//d_kan_around
 	if(input->data == 2 || input->data == 15 ){
 		if(flag_){
@@ -183,6 +206,7 @@ Align::wpCallback(const std_msgs::Int32ConstPtr input){
 		flag_ = false;
 		}
 	}
+
 
 	else flag_ = true;
 	}
