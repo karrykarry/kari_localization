@@ -13,6 +13,29 @@
 
 using namespace std;	
 
+
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_IN (new pcl::PointCloud<pcl::PointXYZ>);
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_all (new pcl::PointCloud<pcl::PointXYZ>);
+
+
+void integrate_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
+{	
+	size_t velodyne_size = input_point->points.size();
+	cout<<velodyne_size<<endl;
+	for(size_t i = 0; i < velodyne_size; i++){
+		pcl::PointXYZ temp_point;
+		temp_point.x = input_point->points[i].x; 
+		temp_point.y = input_point->points[i].y;
+		temp_point.z = input_point->points[i].z;
+
+		cloud_all->points.push_back(temp_point);
+	}
+}
+
+
+
+
 int main (int argc, char** argv)
 {
 	ros::init(argc, argv, "pcd_loader_");
@@ -20,21 +43,28 @@ int main (int argc, char** argv)
 	ros::Rate roop(1);
 
 	string str;
+	string str2;
 
 	n.getParam("map_file", str);
+	n.getParam("map_file2", str2);
 
 	ros::Publisher pub = n.advertise<sensor_msgs::PointCloud2>("/cloud_pcd", 100, true);
 
-	pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_IN (new pcl::PointCloud<pcl::PointXYZINormal>);
-
 	// if( pcl::io::loadPCDFile<pcl::PointXYZRGBNormal>(argv[1], cloud_IN2) == -1 ){
-	if( pcl::io::loadPCDFile<pcl::PointXYZINormal>(str, *cloud_IN) == -1 ){
+	if( pcl::io::loadPCDFile<pcl::PointXYZ>(str, *cloud_IN) == -1 ){
 		cout << "load error !!\n";
 		exit(1);
 	}
+	integrate_map(cloud_IN);
+
+	if( pcl::io::loadPCDFile<pcl::PointXYZ>(str2, *cloud_IN) == -1 ){
+		cout << "load error !!\n";
+		exit(1);
+	}
+	integrate_map(cloud_IN);
 
 	sensor_msgs::PointCloud2 pc;
-	pcl::toROSMsg(*cloud_IN, pc);
+	pcl::toROSMsg(*cloud_all, pc);
 
 	pc.header.frame_id  = "map";	
 	pc.header.stamp  = ros::Time::now();

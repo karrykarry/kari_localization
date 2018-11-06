@@ -14,6 +14,9 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
 
+#include <tf/transform_datatypes.h>
+#include <tf/transform_broadcaster.h>
+
 #include <pcl/point_cloud.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/io/pcd_io.h>
@@ -21,6 +24,10 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/common/transforms.h>
+
+#include <Eigen/Core>
+#include <Eigen/LU>
+#include <Eigen/Eigenvalues>
 
 #include <local_tool/filters.hpp>
 
@@ -36,8 +43,9 @@ const float map_limit = 2.0;
 
 float x_now = 0;
 float y_now = 0;
+float yaw_now = 0;
 
-bool tkb_flag;
+bool map_mode;
 
 
 sensor_msgs::PointCloud2 transformed_pc;
@@ -62,6 +70,7 @@ void lcl_Callback(const nav_msgs::OdometryConstPtr msg)//現在地把握
 {
     x_now = msg->pose.pose.position.x;
     y_now = msg->pose.pose.position.y;
+    yaw_now = msg->pose.pose.orientation.z;
 
 }
 
@@ -195,38 +204,77 @@ void get_min(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point,float& z_ans,float&
 			count++;
 		}
 	}
-	cout<<"roll:"<<roll_ans<<"pitch"<<pitch_ans<<endl;
+	// cout<<"roll:"<<roll_ans<<"pitch:"<<pitch_ans<<endl;
 
 }
 
 
 void pc2transform(float pitch_theta,float roll_theta){
 	
-	float yaw_theta = 0;
-
+	// float yaw_theta = 0;
+    //
 	Eigen::Matrix4f transform_1 = Eigen::Matrix4f::Identity();
-	
-	transform_1 (0,0) = cos (pitch_theta) * cos(yaw_theta);
-	transform_1 (0,1) = (-1) * sin(roll_theta) * (-1) * sin(pitch_theta) * cos(yaw_theta) - cos(roll_theta ) * sin(yaw_theta);
-	transform_1 (0,2) = cos(roll_theta) * (-1) * sin(pitch_theta) * cos(yaw_theta) + (-1) * sin(roll_theta ) * sin(yaw_theta);
-	transform_1 (1,0) = cos(pitch_theta) * sin(yaw_theta);
-	transform_1 (1,1) = (-1) * sin(roll_theta) * (-1) * sin(pitch_theta) * sin(yaw_theta) + cos(roll_theta ) * cos(yaw_theta);
-	transform_1 (1,2) = cos(roll_theta) * (-1) * sin(pitch_theta) * sin(yaw_theta) -(-1) * sin(roll_theta)  * cos(yaw_theta);
-	transform_1 (2,0) = (-1) * -sin (pitch_theta);
-	transform_1 (2,1) = (-1) * sin(roll_theta) * cos(pitch_theta);
-	transform_1 (2,2) = cos(roll_theta) * cos(pitch_theta);
+	//
+	// transform_1 (0,0) = cos (pitch_theta) * cos(yaw_theta);
+	// transform_1 (0,1) = (-1) * sin(roll_theta) * (-1) * sin(pitch_theta) * cos(yaw_theta) - cos(roll_theta ) * sin(yaw_theta);
+	// transform_1 (0,2) = cos(roll_theta) * (-1) * sin(pitch_theta) * cos(yaw_theta) + (-1) * sin(roll_theta ) * sin(yaw_theta);
+	// transform_1 (1,0) = cos(pitch_theta) * sin(yaw_theta);
+	// transform_1 (1,1) = (-1) * sin(roll_theta) * (-1) * sin(pitch_theta) * sin(yaw_theta) + cos(roll_theta ) * cos(yaw_theta);
+	// transform_1 (1,2) = cos(roll_theta) * (-1) * sin(pitch_theta) * sin(yaw_theta) -(-1) * sin(roll_theta)  * cos(yaw_theta);
+	// transform_1 (2,0) = (-1) * -sin (pitch_theta);
+	// transform_1 (2,1) = (-1) * sin(roll_theta) * cos(pitch_theta);
+	// transform_1 (2,2) = cos(roll_theta) * cos(pitch_theta);
+	//
+	// pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
+	// pcl::transformPointCloud (*before_cloud, *transformed_cloud, transform_1);
+	// pcl::toROSMsg(*transformed_cloud,transformed_pc);
+
+
+	Eigen::Matrix3f rot;
+	rot = Eigen::AngleAxisf(roll_theta*(-1), Eigen::Vector3f::UnitX()) * Eigen::AngleAxisf(pitch_theta*(-1), Eigen::Vector3f::UnitY());
+
+	Eigen::Translation3f init_translation (0, 0, 0);
+
+	Eigen::Matrix4f transform = (rot * init_translation).matrix ();
 	
 	pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
-	// You can either apply transform_1 or transform_2; they are the same
-	pcl::transformPointCloud (*before_cloud, *transformed_cloud, transform_1);
+	pcl::transformPointCloud (*before_cloud, *transformed_cloud, transform);
 	pcl::toROSMsg(*transformed_cloud,transformed_pc);
-	
+
+
+
+
+
+
 }
 
 bool flag_ = true;
 void wpCallback(const std_msgs::Int32ConstPtr input){
 
-	if(!tkb_flag){
+	if(map_mode == 1){
+	
+	//d_kan_indoor
+	if(input->data == 3 ){
+		if(flag_){
+		use_map_cloud = cloud_IN2;
+		flag_ = false;
+		}
+	}
+
+	//d_kan_around
+	else if(input->data == 13){
+		if(flag_){
+		use_map_cloud = cloud_IN;
+		flag_ = false;
+		}
+	}
+
+	else flag_ = true;
+
+	}
+
+
+	if(map_mode == 2){
 	//d_kan_around
 	if(input->data == 2 || input->data == 15 ){
 		if(flag_){
@@ -243,14 +291,15 @@ void wpCallback(const std_msgs::Int32ConstPtr input){
 		}
 	}
 
+
 	else flag_ = true;
 	}
-
 
 	else{
 
 		if(input->data == 37){
-			if(flag_){
+			if(flag_){	
+				cout<< "change map" <<endl;
 				use_map_cloud = cloud_IN2;
 				flag_ = false;
 			}
@@ -258,10 +307,22 @@ void wpCallback(const std_msgs::Int32ConstPtr input){
 
 	}
 
-
-
 }
 
+// void tf_broad(double roll_now, double pitch_now, double yaw_now ,double x_now,double y_now,double z_now){
+// 	tf::TransformBroadcaster br;
+// 	tf::Transform transform; //位置と姿勢を持つ座標系を表すクラス
+// 	
+// 	
+// 	transform.setOrigin( tf::Vector3(x_now, y_now, z_now) );
+// 	tf::Quaternion q;
+// 	q.setRPY(roll_now, pitch_now, yaw_now);
+//
+// 	transform.setRotation(q);
+// 	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map" ,"sample_baselink"));
+//
+// 	cout<<"a"<<endl;
+// }
 
 
 int main (int argc, char** argv)
@@ -278,7 +339,7 @@ int main (int argc, char** argv)
 	ros::Subscriber wp_sub = n.subscribe("/waypoint/now", 1000, wpCallback);
 
 
-	n.getParam("tkb_flag",tkb_flag);
+	n.getParam("map_mode",map_mode);
 
 
 	string map_file;
@@ -302,14 +363,16 @@ int main (int argc, char** argv)
 
 		num.data = z_ans;
 		pub_height.publish(num);
-	
+
 		pc2transform(pitch_ans,roll_ans);
 
 		transformed_pc.header.stamp = ros::Time::now();
 		transformed_pc.header.frame_id = "/velodyne";
 		
 		trans_pub.publish(transformed_pc);
-		
+
+		// tf_broad(pitch_ans,roll_ans,yaw_now,x_now,y_now,z_ans);
+
 		roop.sleep();
 		ros::spinOnce();
 	}

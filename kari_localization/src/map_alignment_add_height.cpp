@@ -170,7 +170,7 @@ Align::wpCallback(const std_msgs::Int32ConstPtr input){
 	if(map_mode == 1){
 	
 	//d_kan_indoor
-	if(input->data == 3 || input->data == 9 ){
+	if(input->data == 2){
 		if(flag_){
 		use_map_cloud = filtered_map_cloud2;
 		flag_ = false;
@@ -178,7 +178,7 @@ Align::wpCallback(const std_msgs::Int32ConstPtr input){
 	}
 
 	//d_kan_around
-	else if(input->data == 7 || input->data == 13){
+	else if(input->data == 13){
 		if(flag_){
 		use_map_cloud = filtered_map_cloud;
 		flag_ = false;
@@ -215,6 +215,7 @@ Align::wpCallback(const std_msgs::Int32ConstPtr input){
 
 		if(input->data == 37){
 			if(flag_){
+				cout<< "change map" <<endl;
 				use_map_cloud = filtered_map_cloud2;
 				flag_ = false;
 			}
@@ -245,7 +246,7 @@ Align::velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input){
         d = distance(temp_point.x , temp_point.y);
         
         // if(-0.3 + z_now < temp_point.z && temp_point.z <4.0 + z_now){//つくば
-		 if((1.5 <= d &&d <= laser_limit)) {//つくば
+		 if((0 <= d &&d <= laser_limit)) {//つくば
         // if(1.5 <= d &&d <= laser_limit){//つくば
 
 			limit_input_cloud->points.push_back(temp_point);
@@ -265,7 +266,7 @@ Align::map_read()
 {
 	map_reader(map_size,map_file,filtered_map_cloud);
 	map_reader(map_size,map_file2,filtered_map_cloud2);
-	cout << "mapから得た Filtered cloud contains " << filtered_map_cloud->size ()<< endl;
+	// cout << "mapから得た Filtered cloud contains " << filtered_map_cloud->size ()<< endl;
 	use_map_cloud = filtered_map_cloud;
 }
 
@@ -306,7 +307,7 @@ Align::local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
 void 
 Align::maptolidar()
 {
-	cout << "レーザから得た Filtered cloud contains " << filtered_laser_cloud->size ()<< endl;
+	// cout << "レーザから得た Filtered cloud contains " << filtered_laser_cloud->size ()<< endl;
 
 	// local_map(filtered_map_cloud);
 	local_map(use_map_cloud);

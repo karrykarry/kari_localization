@@ -1,33 +1,33 @@
 <?xml version="1.0"?>
 <launch>
-	<rosparam file="$(find maps)/yaml/d_kan_indoor.yaml" />
-	<!-- <rosparam file="$(find maps)/yaml/d_kan_around.yaml" /> -->
-	<!-- <rosparam file="$(find maps)/yaml/tkb_2018_kakunin.yaml" /> -->
-	<!-- <rosparam file="$(find maps)/yaml/tkb_2018_kakunin_L.yaml" /> -->
-	<!-- <rosparam file="$(find maps)/yaml/ikuta_all.yaml" /> -->
+	<!-- <rosparam file="/home/amsl/ros_catkin_ws/maps/yaml/d_kan_indoor.yaml" /> -->
+	<!-- <rosparam file="/home/amsl/ros_catkin_ws/maps/yaml/d_kan_around.yaml" /> -->
+	<!-- <rosparam file="/home/amsl/ros_catkin_ws/maps/yaml/tkb_2018_kakunin.yaml" /> -->
+	<rosparam file="/home/amsl/ros_catkin_ws/maps/yaml/tkb_2018_kakunin_L.yaml" />
+	<!-- <rosparam file="/home/amsl/ros_catkin_ws/maps/yaml/ikuta_all.yaml" /> -->
 
 	<!-- 1:indoor 2:around other:tkb -->
-	<param name="map_mode" value="1" />
+	<param name="map_mode" value="3" />
 	
-	<node pkg="kari_localization" type="map_alignment_add_height" name="alignment"  >
+	<node pkg="kari_localization" type="map_alignment_add_height" name="alignment"  output="screen">
 		<param name="laser_voxel_size" value="0.3" />
 		<param name="map_voxel_size" value="0.3" />
 		<param name="map_limit" value="20.0" />
 		<param name="laser_limit" value="20.0" />
 		<!-- <param name="lidar_topic" value="/cloud/lcl" /> -->
-		<!-- <param name="lidar_topic" value="/velodyne_obstacles_after" /> -->
-		<param name="lidar_topic" value="/velodyne_obstacles" />
+		<!-- <param name="lidar_topic" value="/velodyne_obstacles" /> -->
+		<param name="lidar_topic" value="/velodyne_obstacles_after" />
 
 		<!--tkb -->
-		<!-- <param name="map_limit" value="50.0" /> -->
-		<!-- <param name="laser_limit" value="50.0" /> -->
+		<param name="map_limit" value="50.0" />
+		<param name="laser_limit" value="50.0" />
 	
 	</node>
 
 	<!-- <node pkg="kari_localization" type="get_height" name="get_height" /> -->
 	<node pkg="kari_localization" type="pc2transform4map" name="get_height" output="screen"/>
 
-	<!-- <node pkg="kari_localization" type="pcd_loader_" name="pcd_loader" /> -->
+	<node pkg="kari_localization" type="pcd_loader_" name="pcd_loader" />
 
 	<node name="imu_complement" pkg="kari_complement" type="imu_complement_add_height" >
 		<param name="header_frame" value="/map" />	
@@ -53,6 +53,6 @@
 		<!-- <remap from="/odom" to="/tinypower/odom" /> -->
 	</node>
 
-	<node name="waypoint_manager" pkg="waypoint_manager" type="waypoint_manager" output="screen"/>
+	<node name="waypoint_manager" pkg="waypoint_manager" type="waypoint_manager" />
 
 </launch>
