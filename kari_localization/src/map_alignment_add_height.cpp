@@ -53,6 +53,8 @@ CloudXPtr filtered_laser_cloud (new pcl::PointCloud<PointX>);
 CloudXPtr local_map_cloud (new pcl::PointCloud<PointX>);
 CloudXPtr target_map_cloud (new pcl::PointCloud<PointX>);
 CloudXPtr filtered_map_cloud (new pcl::PointCloud<PointX>);
+CloudXPtr use_map_cloud (new pcl::PointCloud<PointX>);
+CloudXPtr filtered_map_cloud2 (new pcl::PointCloud<PointX>);
 CloudXPtr output_cloud (new pcl::PointCloud<PointX>);
 
 
@@ -63,6 +65,7 @@ class Align{
 		ros::Subscriber velo_sub;
 		ros::Subscriber odom_sub;
 		ros::Subscriber z_sub;
+		ros::Subscriber wp_sub;
 		ros::Publisher ndt_pub;
 		ros::Publisher vis_voxel_pub;
 		ros::Publisher vis_map_pub;
@@ -77,10 +80,12 @@ class Align{
 		double l_roll, l_pitch, l_yaw;//角度etc
 
 		bool flag;//lidar
+		bool tkb_flag;//lidar
 		float laser_size,map_size;//voxel
 		float map_limit,laser_limit;//map・laserの距離
 		string LIDAR_TOPIC;
 		string map_file;
+		string map_file2;
 
 	public:
 		Align(ros::NodeHandle n,ros::NodeHandle priv_nh);
@@ -92,6 +97,7 @@ class Align{
 		void z_lcl_Callback(std_msgs::Float64 number);
 		void odomCallback(const nav_msgs::Odometry::Ptr msg);
 		void velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input);//velodyneの点群を扱う
+		void wpCallback(const std_msgs::Int32ConstPtr input);//mapの切り替え
 		bool spin()
 		{
 			ros::Rate loop_rate(r);
@@ -118,10 +124,13 @@ Align::Align(ros::NodeHandle n,ros::NodeHandle priv_nh) :
     priv_nh.getParam("laser_limit",laser_limit);
     priv_nh.getParam("lidar_topic",LIDAR_TOPIC);
 	n.getParam("map_file",map_file);
+	n.getParam("map_file2",map_file2);
+	n.getParam("tkb_flag",tkb_flag);
 		
 	velo_sub = n.subscribe(LIDAR_TOPIC, 1000, &Align::velodyneCallback, this);
 	odom_sub = n.subscribe("/lcl_ekf", 1000, &Align::odomCallback, this);
 	z_sub = n.subscribe("/height", 1000, &Align::z_lcl_Callback, this);
+	wp_sub = n.subscribe("/waypoint/now", 1000, &Align::wpCallback, this);
 
 	ndt_pub = n.advertise<nav_msgs::Odometry>("/sq_ndt_data", 1000);
 	vis_voxel_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_result", 1000);
@@ -153,6 +162,43 @@ Align::z_lcl_Callback(std_msgs::Float64 number){
 	z_now = number.data + 0.7;
 
 }
+
+bool flag_ = true;
+void 
+Align::wpCallback(const std_msgs::Int32ConstPtr input){
+
+	if(!tkb_flag){
+	//d_kan_around
+	if(input->data == 2 || input->data == 15 ){
+		if(flag_){
+		use_map_cloud = filtered_map_cloud2;
+		flag_ = false;
+		}
+	}
+
+	//d_kan_indoor
+	else if(input->data == 12 || input->data == 23){
+		if(flag_){
+		use_map_cloud = filtered_map_cloud;
+		flag_ = false;
+		}
+	}
+
+	else flag_ = true;
+	}
+
+	else{
+
+		if(input->data == 37){
+			if(flag_){
+				use_map_cloud = filtered_map_cloud2;
+				flag_ = false;
+			}
+		}
+
+	}
+}
+
 
 
 //lidar情報
@@ -194,9 +240,12 @@ void
 Align::map_read()
 {
 	map_reader(map_size,map_file,filtered_map_cloud);
+	map_reader(map_size,map_file2,filtered_map_cloud2);
 	cout << "mapから得た Filtered cloud contains " << filtered_map_cloud->size ()<< endl;
-
+	use_map_cloud = filtered_map_cloud;
 }
+
+
 
 
 //mapの一部を算出
@@ -235,7 +284,8 @@ Align::maptolidar()
 {
 	cout << "レーザから得た Filtered cloud contains " << filtered_laser_cloud->size ()<< endl;
 
-	local_map(filtered_map_cloud);
+	// local_map(filtered_map_cloud);
+	local_map(use_map_cloud);
 
 	Matrix4f a;
 	a = map_ndt_vis(local_map_cloud,filtered_laser_cloud,output_cloud,odo);

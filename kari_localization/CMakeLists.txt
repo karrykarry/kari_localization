@@ -279,6 +279,21 @@ target_link_libraries(pcd_loader_
 	${catkin_LIBRARIES}
 )
 
+add_executable(pc2transform4map src/pc2transform4map.cpp)
+target_link_libraries(pc2transform4map
+	local_tool
+	${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
+)
+
+
+
+# add_executable(pc2transform4map src/pc2transform4map.cpp src/pc2transform4map_main.cpp)
+# target_link_libraries(pc2transform4map
+# 	local_tool
+# 	${catkin_LIBRARIES}
+#     ${PCL_LIBRARIES}
+# )
 
 #############
 ## Install ##
