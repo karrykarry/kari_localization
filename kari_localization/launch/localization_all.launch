@@ -26,11 +26,11 @@
 	</node>
 
 	<!-- <node pkg="kari_localization" type="get_height" name="get_height" /> -->
-	<!-- <node pkg="kari_localization" type="pc2transform4map_v2" name="get_height" output="screen"/> -->
-	<node pkg="kari_localization" type="pc2transform4map" name="get_height" />
+	<node pkg="kari_localization" type="pc2transform4map_v2" name="get_height" output="screen"/>
+	<!-- <node pkg="kari_localization" type="pc2transform4map" name="get_height" /> -->
 	
-	<node pkg="tf" type="static_transform_publisher" name="link3_broadcaster"
-		args="0 0 1.300 0 0 0 /6DoF_base_link /velodyne_ 100" />
+	<!-- <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" -->
+	<!-- 	args="0 0 1.300 0 0 0 /6DoF_base_link /velodyne_ 100" /> -->
 
 	<node pkg="kari_localization" type="pcd_loader_" name="pcd_loader" />
 

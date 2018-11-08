@@ -377,7 +377,7 @@ PC2::pc2transform(float pitch_theta,float roll_theta){
 
 	trans_pub.publish(transformed_pc);
 
-	// tf_broad(pitch_theta,roll_theta,yaw_now,x_now,y_now,z_ans);
+	tf_broad(pitch_theta,roll_theta,yaw_now,x_now,y_now,z_ans);
 
 
 }
