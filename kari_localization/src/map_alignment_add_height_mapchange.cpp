@@ -97,6 +97,7 @@ class Align{
 		void z_lcl_Callback(std_msgs::Float64 number);
 		void odomCallback(const nav_msgs::Odometry::Ptr msg);
 		void velodyneCallback(const sensor_msgs::PointCloud2ConstPtr input);//velodyneの点群を扱う
+		void wpCallback(const std_msgs::Int32ConstPtr input);//mapの切り替え
 		bool spin()
 		{
 			ros::Rate loop_rate(r);
@@ -122,11 +123,14 @@ Align::Align(ros::NodeHandle n,ros::NodeHandle priv_nh) :
     priv_nh.getParam("map_limit",map_limit);
     priv_nh.getParam("laser_limit",laser_limit);
     priv_nh.getParam("lidar_topic",LIDAR_TOPIC);
-	n.getParam("map_file_noground",map_file);
+	n.getParam("map_file",map_file);
+	// n.getParam("map_file2",map_file2);
+	n.getParam("map_mode",map_mode);
 		
 	velo_sub = n.subscribe(LIDAR_TOPIC, 1000, &Align::velodyneCallback, this);
 	odom_sub = n.subscribe("/lcl_ekf", 1000, &Align::odomCallback, this);
 	z_sub = n.subscribe("/height", 1000, &Align::z_lcl_Callback, this);
+	wp_sub = n.subscribe("/waypoint/now", 1000, &Align::wpCallback, this);
 
 	ndt_pub = n.advertise<nav_msgs::Odometry>("/sq_ndt_data", 1000);
 	vis_voxel_pub = n.advertise<sensor_msgs::PointCloud2>("/ndt_result", 1000);
@@ -158,6 +162,68 @@ Align::z_lcl_Callback(std_msgs::Float64 number){
 	z_now = number.data + 0.7;
 
 }
+
+bool flag_ = true;
+void 
+Align::wpCallback(const std_msgs::Int32ConstPtr input){
+
+	if(map_mode == 1){
+	
+	//d_kan_indoor
+	if(input->data == 2){
+		if(flag_){
+		use_map_cloud = filtered_map_cloud2;
+		flag_ = false;
+		}
+	}
+
+	//d_kan_around
+	else if(input->data == 13){
+		if(flag_){
+		use_map_cloud = filtered_map_cloud;
+		flag_ = false;
+		}
+	}
+
+	else flag_ = true;
+
+	}
+
+
+	if(map_mode == 2){
+	//d_kan_around
+	if(input->data == 2 || input->data == 15 ){
+		if(flag_){
+		use_map_cloud = filtered_map_cloud2;
+		flag_ = false;
+		}
+	}
+
+	//d_kan_indoor
+	else if(input->data == 12 || input->data == 23){
+		if(flag_){
+		use_map_cloud = filtered_map_cloud;
+		flag_ = false;
+		}
+	}
+
+
+	else flag_ = true;
+	}
+
+	else{
+
+		// if(input->data == 37){
+		// 	if(flag_){
+		// 		cout<< "change map" <<endl;
+		// 		use_map_cloud = filtered_map_cloud2;
+		// 		flag_ = false;
+		// 	}
+		// }
+
+	}
+}
+
 
 
 //lidar情報

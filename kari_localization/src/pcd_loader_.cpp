@@ -45,8 +45,8 @@ int main (int argc, char** argv)
 	string str;
 	string str2;
 
-	n.getParam("map_file", str);
-	n.getParam("map_file2", str2);
+	n.getParam("map_file_noground", str);
+	n.getParam("map_file_ground", str2);
 
 	ros::Publisher pub = n.advertise<sensor_msgs::PointCloud2>("/cloud_pcd", 100, true);
 

@@ -263,13 +263,13 @@ Complement::start(){
 
 	lcl_hantei_pub.publish(number);//0:直線 1:カーブ
 
-
-	transform.setOrigin( tf::Vector3(lcl[type].x, lcl[type].y, z_height) );
-	tf::Quaternion q;
-	q.setRPY(0, 0, lcl[type].yaw);
-
-	transform.setRotation(q);
-	br.sendTransform(tf::StampedTransform(transform, lcl_.header.stamp , HEADER_FRAME, CHILD_FRAME));
+	//tf
+	// transform.setOrigin( tf::Vector3(lcl[type].x, lcl[type].y, z_height) );
+	// tf::Quaternion q;
+	// q.setRPY(0, 0, lcl[type].yaw);
+    //
+	// transform.setRotation(q);
+	// br.sendTransform(tf::StampedTransform(transform, lcl_.header.stamp , HEADER_FRAME, CHILD_FRAME));
 
 }
 

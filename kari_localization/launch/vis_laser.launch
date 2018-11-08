@@ -1,8 +1,18 @@
 <?xml version="1.0"?>
 <launch>
 	<node pkg="kari_localization" type="vis_laser" name="vis_laser" output="screen" >
+		<param name="laser_pub" value="laser_pub" />
+		<param name="laser_sub" value="velodyne_obstacles" />
+		<param name="header_frame" value="/sample_baselink" />
 		<!-- <rosparam file="$(find kari_localization)/yaml/hsd3d.yaml" /> -->
-		<rosparam file="$(find kari_localization)/yaml/velodyne.yaml" />
+		<!-- <rosparam file="$(find kari_localization)/yaml/velodyne.yaml" /> -->
+	</node>
+	<node pkg="kari_localization" type="vis_laser" name="vis_laser_" output="screen" >
+		<param name="laser_pub" value="laser_pub_after" />
+		<param name="laser_sub" value="velodyne_obstacles_after" />
+		<param name="header_frame" value="/sample_baselink" />
+		<!-- <rosparam file="$(find kari_localization)/yaml/hsd3d.yaml" /> -->
+		<!-- <rosparam file="$(find kari_localization)/yaml/velodyne.yaml" /> -->
 	</node>
 </launch>
 

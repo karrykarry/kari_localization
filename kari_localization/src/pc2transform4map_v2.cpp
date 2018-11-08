@@ -13,9 +13,11 @@
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
+#include <sensor_msgs/point_cloud_conversion.h>
 
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl/kdtree/kdtree_flann.h>
@@ -63,20 +65,124 @@ struct Data {
 };
 
 
-void lcl_Callback(const nav_msgs::OdometryConstPtr msg)//現在地把握
+class PC2{
+	private:
+		ros::NodeHandle n;
+		ros::Publisher pub_height;
+		ros::Publisher trans_pub;
+		ros::Subscriber odom_sub;
+		ros::Subscriber pc_sub;
+	
+
+		tf::TransformBroadcaster br;
+		tf::Transform transform; //位置と姿勢を持つ座標系を表すクラス
+		tf::TransformListener listener; //位置と姿勢を持つ座標系を表すクラス
+		sensor_msgs::PointCloud map_before;
+		sensor_msgs::PointCloud2 map_pc2_before;
+
+		nav_msgs::Odometry matching;
+		nav_msgs::Odometry gps;
+
+		ros::Time time;
+
+		string map_file;
+
+		bool transform_flag;
+		float z_ans;
+		float pitch_ans;
+		float roll_ans;
+
+	public:
+		PC2(ros::NodeHandle n);
+		void lcl_Callback(const nav_msgs::OdometryConstPtr msg);
+		void pcCallback(const sensor_msgs::PointCloud2ConstPtr msg);
+		void local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point);
+		void get_min(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point,float& z_ans,float& pitch_ans,float& roll_ans);
+		void transform_map(sensor_msgs::PointCloud buffer_point);
+
+		void tf_broad(double roll_now, double pitch_now, double yaw_now ,double x_now,double y_now,double z_now);
+		void pc2transform(float pitch_theta,float roll_theta);
+		void process();
+
+};
+
+PC2::PC2(ros::NodeHandle n):
+	transform_flag(false),pitch_ans(0.0),roll_ans(0.0),z_ans(0.0)
+{
+	pub_height  = n.advertise<std_msgs::Float64>("/height", 10);	
+	trans_pub  = n.advertise<sensor_msgs::PointCloud2>("/velodyne_obstacles_after", 10);	
+  
+    odom_sub = n.subscribe("/lcl_ekf", 1000, &PC2::lcl_Callback, this);
+    pc_sub = n.subscribe("/velodyne_obstacles", 1000, &PC2::pcCallback, this);
+	n.getParam("map_file_ground",map_file);
+	map_reader(0.2,map_file,cloud_IN);
+	pcl::toROSMsg(*cloud_IN , map_pc2_before);
+
+	*use_map_cloud = *cloud_IN;
+	map_pc2_before.header.frame_id = "/map";
+	map_pc2_before.header.stamp = ros::Time::now();
+	sensor_msgs::convertPointCloud2ToPointCloud(map_pc2_before, map_before);
+
+}
+
+
+int main (int argc, char** argv){
+	ros::init(argc, argv, "pc2transform4map");
+  	ros::NodeHandle n;
+	ros::Rate roop(10);
+	PC2 pc2(n);
+	
+	while(ros::ok()){
+		
+		pc2.process();
+		roop.sleep();
+		ros::spinOnce();
+	}
+	return (0);
+
+
+}
+
+
+
+void 
+PC2::lcl_Callback(const nav_msgs::OdometryConstPtr msg)//現在地把握
 {
     x_now = msg->pose.pose.position.x;
     y_now = msg->pose.pose.position.y;
     yaw_now = msg->pose.pose.orientation.z;
-
+	time = msg->header.stamp;
 }
 
-void pcCallback(const sensor_msgs::PointCloud2ConstPtr msg)//現在地把握
+void 
+PC2::pcCallback(const sensor_msgs::PointCloud2ConstPtr msg)//現在地把握
 {
 	pcl::fromROSMsg(*msg,*before_cloud);
 }
 
-void local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
+void
+PC2::transform_map(sensor_msgs::PointCloud buffer_point){
+
+	sensor_msgs::PointCloud save_point;
+	sensor_msgs::PointCloud2 save_point2;
+
+	try{
+		listener.waitForTransform("/map", "/matching_base_link", time, ros::Duration(1.0));
+		listener.transformPointCloud("/velodyne_", buffer_point, save_point);
+		sensor_msgs::convertPointCloudToPointCloud2(save_point, save_point2);	
+		pcl::fromROSMsg(save_point2,*use_map_cloud);
+		transform_flag = true;
+	}
+	catch (tf::TransformException ex){
+		ROS_ERROR("%s",ex.what());
+		ros::Duration(1.0).sleep();
+	}
+
+
+}
+
+void 
+PC2::local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
 {
     //limit_laserを設定
 	local_map_cloud->points.clear();
@@ -98,7 +204,8 @@ void local_map(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point)
 }
 
 
-void get_min(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point,float& z_ans,float& pitch_ans,float& roll_ans){
+void 
+PC2::get_min(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point,float& z_ans,float& pitch_ans,float& roll_ans){
        
     float min[grid_dim_][grid_dim_];
     bool init[grid_dim_][grid_dim_];
@@ -203,10 +310,35 @@ void get_min(pcl::PointCloud<pcl::PointXYZ>::Ptr input_point,float& z_ans,float&
 	}
 	// cout<<"roll:"<<roll_ans<<"pitch:"<<pitch_ans<<endl;
 
+
+	std_msgs::Float64 num;
+	num.data = z_ans;
+	pub_height.publish(num);
+
+
+}
+
+void 
+PC2::tf_broad(double roll_now, double pitch_now, double yaw_now ,double x_now,double y_now,double z_now){
+
+	transform.setOrigin( tf::Vector3(x_now, y_now, z_now) );
+	tf::Quaternion q;
+	q.setRPY(roll_now, pitch_now, yaw_now);
+
+	// transform.setOrigin( tf::Vector3(x_now, y_now, z_now) );
+	// tf::Quaternion q;
+	// q.setRPY(0.0, 0.0, yaw_now);
+
+
+
+	transform.setRotation(q);
+	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map" ,"6DoF_base_link"));
+
 }
 
 
-void pc2transform(float pitch_theta,float roll_theta){
+void 
+PC2::pc2transform(float pitch_theta,float roll_theta){
 	
 	// float yaw_theta = 0;
     //
@@ -228,7 +360,8 @@ void pc2transform(float pitch_theta,float roll_theta){
 
 
 	Eigen::Matrix3f rot;
-	rot = Eigen::AngleAxisf(roll_theta*(-1), Eigen::Vector3f::UnitX()) * Eigen::AngleAxisf(pitch_theta*(-1), Eigen::Vector3f::UnitY());
+	// rot = Eigen::AngleAxisf(roll_theta*(-1), Eigen::Vector3f::UnitX()) * Eigen::AngleAxisf(pitch_theta*(-1), Eigen::Vector3f::UnitY());
+	rot = Eigen::AngleAxisf(roll_theta, Eigen::Vector3f::UnitX()) * Eigen::AngleAxisf(pitch_theta, Eigen::Vector3f::UnitY());
 
 	Eigen::Translation3f init_translation (0, 0, 0);
 
@@ -239,71 +372,23 @@ void pc2transform(float pitch_theta,float roll_theta){
 	pcl::toROSMsg(*transformed_cloud,transformed_pc);
 
 
+	transformed_pc.header.stamp = ros::Time::now();
+	transformed_pc.header.frame_id = "/velodyne";
 
+	trans_pub.publish(transformed_pc);
 
+	tf_broad(pitch_theta,roll_theta,yaw_now,x_now,y_now,z_ans);
 
 
 }
 
-
-// void tf_broad(double roll_now, double pitch_now, double yaw_now ,double x_now,double y_now,double z_now){
-// 	tf::TransformBroadcaster br;
-// 	tf::Transform transform; //位置と姿勢を持つ座標系を表すクラス
-// 	
-// 	
-// 	transform.setOrigin( tf::Vector3(x_now, y_now, z_now) );
-// 	tf::Quaternion q;
-// 	q.setRPY(roll_now, pitch_now, yaw_now);
-//
-// 	transform.setRotation(q);
-// 	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map" ,"sample_baselink"));
-//
-// 	cout<<"a"<<endl;
-// }
-
-
-int main (int argc, char** argv)
-{
-	ros::init(argc, argv, "pc2transform4map");
-  	ros::NodeHandle n;
-	ros::Rate roop(10);
-
-	ros::Publisher pub_height  = n.advertise<std_msgs::Float64>("/height", 10);	
-	ros::Publisher trans_pub  = n.advertise<sensor_msgs::PointCloud2>("/velodyne_obstacles_after", 10);	
-  
-    ros::Subscriber odom_sub = n.subscribe("/lcl_ekf", 1000, lcl_Callback);//lclから現在地求む
-    ros::Subscriber pc_sub = n.subscribe("/velodyne_obstacles", 1000, pcCallback);
-
-	string map_file;
-	n.getParam("map_file_ground",map_file);
-	map_reader(0.2,map_file,cloud_IN);
-	
-	use_map_cloud = cloud_IN;
-
-	std_msgs::Float64 num;
-	float z_ans;
-	float pitch_ans;
-	float roll_ans;
-	
-	while(ros::ok()){
-
+void
+PC2::process(){
+		
+		// if(!transform_flag)pc2transform(0.0,0.0);
+		// transform_map(map_before);
 		local_map(use_map_cloud);	
         get_min(local_map_cloud,z_ans,pitch_ans,roll_ans);
-
-		num.data = z_ans;
-		pub_height.publish(num);
-
 		pc2transform(pitch_ans,roll_ans);
-
-		transformed_pc.header.stamp = ros::Time::now();
-		transformed_pc.header.frame_id = "/velodyne";
 		
-		trans_pub.publish(transformed_pc);
-
-		// tf_broad(pitch_ans,roll_ans,yaw_now,x_now,y_now,z_ans);
-
-		roop.sleep();
-		ros::spinOnce();
-	}
-	return (0);
 }
